@@ -11,6 +11,8 @@ import {
 import appCss from "../styles.css?url";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
+import { AuthProvider } from "@/context/AuthContext";
+import { StoreProvider } from "@/context/StoreContext";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { Toaster } from "@/components/ui/sonner";
@@ -117,18 +119,22 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <WishlistProvider>
-          <div className="flex min-h-screen flex-col">
-            <Navbar />
-            <main className="flex-1">
-              <Outlet />
-            </main>
-            <Footer />
-          </div>
-          <Toaster />
-        </WishlistProvider>
-      </CartProvider>
+      <AuthProvider>
+        <StoreProvider>
+          <CartProvider>
+            <WishlistProvider>
+              <div className="flex min-h-screen flex-col">
+                <Navbar />
+                <main className="flex-1">
+                  <Outlet />
+                </main>
+                <Footer />
+              </div>
+              <Toaster />
+            </WishlistProvider>
+          </CartProvider>
+        </StoreProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
