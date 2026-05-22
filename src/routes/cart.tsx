@@ -14,8 +14,7 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { detailed, setQty, remove, subtotal, clear } = useCart();
-  const shipping = subtotal > 0 ? (subtotal > 75 ? 0 : 5) : 0;
-  const total = subtotal + shipping;
+  const total = subtotal;
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   if (detailed.length === 0) {
@@ -110,14 +109,12 @@ function CartPage() {
               <dd className="font-medium">${subtotal.toFixed(2)}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-muted-foreground">Shipping</dt>
-              <dd className="font-medium">{shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}</dd>
+              <dt className="text-muted-foreground">Delivery</dt>
+              <dd className="font-medium text-foreground">To be determined</dd>
             </div>
-            {subtotal < 75 && (
-              <p className="text-xs text-muted-foreground">
-                Add ${(75 - subtotal).toFixed(2)} more for free shipping.
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Delivery cost will be confirmed after you place your order.
+            </p>
             <div className="my-3 border-t border-border" />
             <div className="flex justify-between text-base">
               <dt className="font-semibold">Total</dt>
