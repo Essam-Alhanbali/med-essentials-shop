@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Mail, MapPin, Clock } from "lucide-react";
+import { useStore } from "@/context/StoreContext";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
@@ -37,6 +38,7 @@ const faqs = [
 
 function AboutPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const { about } = useStore();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -55,19 +57,11 @@ function AboutPage() {
       <div className="max-w-3xl">
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">About Us</p>
         <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">
-          Built by med students, for med students.
+          {about.heading}
         </h1>
         <div className="mt-8 space-y-5 text-base leading-relaxed text-muted-foreground">
-          <p>
-            MedClub Store is run entirely by the medical students' club at our university. We
-            negotiate directly with manufacturers and distributors so that essential equipment —
-            from your first stethoscope to your white coat — is available at a price every
-            student can afford.
-          </p>
-          <p>
-            Every dollar of margin goes back into club activities: free tutoring, anatomy lab
-            sessions, mental health programming, and outreach in the local community.
-          </p>
+          <p>{about.intro}</p>
+          <p>{about.body}</p>
         </div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
@@ -95,15 +89,15 @@ function AboutPage() {
           <ul className="mt-8 space-y-4 text-sm">
             <li className="flex items-start gap-3">
               <Mail className="mt-0.5 h-4 w-4 text-primary" />
-              <span>store@medclub.edu</span>
+              <span>{about.email}</span>
             </li>
             <li className="flex items-start gap-3">
               <MapPin className="mt-0.5 h-4 w-4 text-primary" />
-              <span>Student Union, Room 204</span>
+              <span>{about.address}</span>
             </li>
             <li className="flex items-start gap-3">
               <Clock className="mt-0.5 h-4 w-4 text-primary" />
-              <span>Mon–Fri · 11am – 4pm</span>
+              <span>{about.hours}</span>
             </li>
           </ul>
 
