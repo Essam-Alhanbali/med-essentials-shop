@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Truck, ShieldCheck, GraduationCap } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
-import { products, categories } from "@/data/products";
+import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/site/ProductCard";
 
 export const Route = createFileRoute("/")({
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { products, categories } = useStore();
   const featured = products.slice(0, 6);
   return (
     <div>
