@@ -1,25 +1,13 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Minus, Plus, ArrowLeft, Check } from "lucide-react";
-import { products } from "@/data/products";
+import { useStore } from "@/context/StoreContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
-  loader: ({ params }) => {
-    const product = products.find((p) => p.id === params.id);
-    if (!product) throw notFound();
-    return { product };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.product.name} — MedClub Store` },
-          { name: "description", content: loaderData.product.blurb },
-        ]
-      : [],
-  }),
+  head: () => ({ meta: [{ title: "Product — MedClub Store" }] }),
   notFoundComponent: () => (
     <div className="mx-auto max-w-3xl px-6 py-24 text-center">
       <h1 className="text-2xl font-semibold">Product not found</h1>
@@ -31,9 +19,22 @@ export const Route = createFileRoute("/product/$id")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const { id } = Route.useParams();
+  const { getProduct } = useStore();
+  const product = getProduct(id);
   const { add } = useCart();
   const [qty, setQty] = useState(1);
+
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-3xl px-6 py-24 text-center">
+        <h1 className="text-2xl font-semibold">Product not found</h1>
+        <Link to="/shop" className="mt-4 inline-block text-primary hover:underline">
+          Back to shop
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12">
@@ -44,14 +45,18 @@ function ProductPage() {
         <ArrowLeft className="h-4 w-4" /> Back to shop
       </Link>
       <div className="mt-6 grid gap-12 md:grid-cols-2">
-        <div className="flex aspect-square items-center justify-center rounded-2xl border border-border bg-gradient-to-br from-secondary to-background">
-          <div className="text-9xl">
-            {product.category === "Diagnostics" && "🩺"}
-            {product.category === "Anatomy" && "🦴"}
-            {product.category === "Apparel" && "🥼"}
-            {product.category === "Stationery" && "📓"}
-            {product.category === "Surgical" && "✂️"}
-          </div>
+        <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary to-background">
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+          ) : (
+            <div className="text-9xl">
+              {product.category === "Diagnostics" && "🩺"}
+              {product.category === "Anatomy" && "🦴"}
+              {product.category === "Apparel" && "🥼"}
+              {product.category === "Stationery" && "📓"}
+              {product.category === "Surgical" && "✂️"}
+            </div>
+          )}
         </div>
         <div>
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
