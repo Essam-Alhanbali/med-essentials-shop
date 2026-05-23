@@ -46,11 +46,11 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <Link
             to={user ? "/admin" : "/admin/login"}
-            className="hidden h-9 items-center gap-1.5 rounded-md px-3 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:inline-flex"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:px-3"
             aria-label="Admin"
           >
             <Shield className="h-4 w-4" />
-            <span>Admin</span>
+            <span className="hidden sm:inline">Admin</span>
           </Link>
           <Link
             to="/wishlist"
