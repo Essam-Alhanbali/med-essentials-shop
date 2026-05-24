@@ -81,7 +81,7 @@ function WishlistPage() {
                   >
                     {product.name}
                   </Link>
-                  <div className="mt-1 text-sm font-semibold">${product.price}</div>
+                  <div className="mt-1 text-sm font-semibold">{formatPriceWrapper(product.price)}</div>
                 </div>
                 <button
                   onClick={() => remove(product.id)}
