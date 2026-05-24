@@ -5,8 +5,16 @@ import { products as seedProducts, categories as seedCategories, type Product, t
 
 export interface StoreProduct extends Omit<Product, "category"> {
   category: string;
+  subcategory?: string;
   imageUrl?: string;
   source: "seed" | "firestore";
+}
+
+export interface CategoryDoc {
+  id: string;
+  name: string;
+  subcategories: string[];
+  imageUrl?: string;
 }
 
 export interface AboutContent {
@@ -16,6 +24,14 @@ export interface AboutContent {
   email: string;
   address: string;
   hours: string;
+}
+
+export interface FooterContent {
+  tagline: string;
+  email: string;
+  address: string;
+  copyright: string;
+  bottomRight: string;
 }
 
 const DEFAULT_ABOUT: AboutContent = {
@@ -29,11 +45,21 @@ const DEFAULT_ABOUT: AboutContent = {
   hours: "Mon–Fri · 11am – 4pm",
 };
 
+const DEFAULT_FOOTER: FooterContent = {
+  tagline: "Equipment, books, and apparel — curated by med students, for med students.",
+  email: "store@medclub.edu",
+  address: "Student Union, Room 204",
+  copyright: `© ${new Date().getFullYear()} MedClub Store. All rights reserved.`,
+  bottomRight: "Built for students, by students.",
+};
+
 interface StoreContextValue {
   products: StoreProduct[];
   categories: string[];
+  categoryDocs: CategoryDoc[];
   getProduct: (id: string) => StoreProduct | undefined;
   about: AboutContent;
+  footer: FooterContent;
   loading: boolean;
 }
 
@@ -43,8 +69,10 @@ const seedAsStore: StoreProduct[] = seedProducts.map((p) => ({ ...p, source: "se
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [extraProducts, setExtraProducts] = useState<StoreProduct[]>([]);
-  const [extraCategories, setExtraCategories] = useState<string[]>([]);
+  const [categoryDocs, setCategoryDocs] = useState<CategoryDoc[]>([]);
+  const [hasCategoryDocs, setHasCategoryDocs] = useState(false);
   const [about, setAbout] = useState<AboutContent>(DEFAULT_ABOUT);
+  const [footer, setFooter] = useState<FooterContent>(DEFAULT_FOOTER);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -57,6 +85,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             id: d.id,
             name: data.name ?? "Untitled",
             category: data.category ?? "Other",
+            subcategory: data.subcategory,
             price: Number(data.price ?? 0),
             blurb: data.blurb ?? "",
             description: data.description ?? "",
@@ -71,7 +100,20 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     );
     const unsubC = onSnapshot(
       collection(db, "categories"),
-      (snap) => setExtraCategories(snap.docs.map((d) => (d.data().name as string) ?? d.id).filter(Boolean)),
+      (snap) => {
+        setHasCategoryDocs(!snap.empty);
+        setCategoryDocs(
+          snap.docs.map((d) => {
+            const data = d.data() as Partial<CategoryDoc>;
+            return {
+              id: d.id,
+              name: (data.name as string) ?? d.id,
+              subcategories: Array.isArray(data.subcategories) ? data.subcategories : [],
+              imageUrl: data.imageUrl,
+            };
+          })
+        );
+      },
       () => {}
     );
     getDoc(doc(db, "content", "about"))
@@ -87,24 +129,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       () => {}
     );
+    const unsubFooter = onSnapshot(
+      doc(db, "content", "footer"),
+      (s) => {
+        if (s.exists()) setFooter({ ...DEFAULT_FOOTER, ...(s.data() as Partial<FooterContent>) });
+      },
+      () => {}
+    );
     return () => {
       unsubP();
       unsubC();
       unsubAbout();
+      unsubFooter();
     };
   }, []);
 
   const value = useMemo<StoreContextValue>(() => {
     const all = [...seedAsStore, ...extraProducts];
-    const cats = Array.from(new Set([...(seedCategories as string[]), ...extraCategories]));
+    // Until any category doc exists in Firestore, fall back to seed categories
+    // so the storefront is not empty before the admin first opens the panel.
+    const effectiveCategoryDocs: CategoryDoc[] = hasCategoryDocs
+      ? categoryDocs
+      : (seedCategories as string[]).map((name) => ({
+          id: name,
+          name,
+          subcategories: [],
+        }));
+    const cats = effectiveCategoryDocs.map((c) => c.name);
     return {
       products: all,
       categories: cats,
+      categoryDocs: effectiveCategoryDocs,
       getProduct: (id) => all.find((p) => p.id === id),
       about,
+      footer,
       loading,
     };
-  }, [extraProducts, extraCategories, about, loading]);
+  }, [extraProducts, categoryDocs, hasCategoryDocs, about, footer, loading]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }

@@ -4,6 +4,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import type { StoreProduct } from "@/context/StoreContext";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/price";
 
 const accentByCategory: Record<string, string> = {
   Diagnostics: "from-sky-50 to-white",
@@ -69,7 +70,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         </Link>
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.blurb}</p>
         <div className="mt-4 flex items-center justify-between">
-          <span className="text-base font-semibold text-foreground">${product.price}</span>
+          <span className="text-base font-semibold text-foreground">{formatPrice(product.price)}</span>
           <button
             onClick={() => {
               add(product.id);

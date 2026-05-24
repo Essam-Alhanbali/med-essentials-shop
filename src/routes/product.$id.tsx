@@ -4,6 +4,7 @@ import { Minus, Plus, ArrowLeft, Check } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/price";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -63,7 +64,7 @@ function ProductPage() {
             {product.category}
           </div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight md:text-4xl">{product.name}</h1>
-          <div className="mt-4 text-2xl font-semibold text-foreground">${product.price}</div>
+          <div className="mt-4 text-2xl font-semibold text-foreground">{formatPrice(product.price)}</div>
           <p className="mt-6 text-base text-muted-foreground">{product.description}</p>
 
           <ul className="mt-6 space-y-2 text-sm">

@@ -3,6 +3,7 @@ import { Heart, X } from "lucide-react";
 import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/price";
 
 export const Route = createFileRoute("/wishlist")({
   component: WishlistPage,
@@ -81,7 +82,7 @@ function WishlistPage() {
                   >
                     {product.name}
                   </Link>
-                  <div className="mt-1 text-sm font-semibold">${product.price}</div>
+                  <div className="mt-1 text-sm font-semibold">{formatPrice(product.price)}</div>
                 </div>
                 <button
                   onClick={() => remove(product.id)}

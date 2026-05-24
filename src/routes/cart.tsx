@@ -4,6 +4,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
+import { formatPrice } from "@/lib/price";
 
 export const Route = createFileRoute("/cart")({
   component: CartPage,
@@ -95,7 +96,7 @@ function CartPage() {
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <div className="text-sm font-semibold">${(product.price * quantity).toFixed(2)}</div>
+                  <div className="text-sm font-semibold">{formatPrice(product.price * quantity)}</div>
                 </div>
               </div>
             </li>
@@ -106,7 +107,7 @@ function CartPage() {
           <dl className="mt-5 space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Subtotal</dt>
-              <dd className="font-medium">${subtotal.toFixed(2)}</dd>
+              <dd className="font-medium">{formatPrice(subtotal)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted-foreground">Delivery</dt>
@@ -118,7 +119,7 @@ function CartPage() {
             <div className="my-3 border-t border-border" />
             <div className="flex justify-between text-base">
               <dt className="font-semibold">Total</dt>
-              <dd className="font-semibold">${total.toFixed(2)}</dd>
+              <dd className="font-semibold">{formatPrice(total)}</dd>
             </div>
           </dl>
           <button
@@ -230,7 +231,7 @@ function CheckoutDialog({
           <div>
             <h2 className="text-base font-semibold">Complete your order</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Total: <span className="font-medium text-foreground">${total.toFixed(2)}</span>
+              Total: <span className="font-medium text-foreground">{formatPrice(total)}</span>
             </p>
           </div>
           <button
