@@ -1,13 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { collection, doc, onSnapshot, getDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { products as seedProducts, categories as seedCategories, type Product, type Category } from "@/data/products";
+import { categories as seedCategories, type Product, type Category } from "@/data/products";
+import { DEFAULT_CATEGORY_EMOJI } from "@/lib/orderStatus";
 
 export interface StoreProduct extends Omit<Product, "category"> {
   category: string;
   subcategory?: string;
   imageUrl?: string;
-  source: "seed" | "firestore";
 }
 
 export interface CategoryDoc {
@@ -15,6 +15,12 @@ export interface CategoryDoc {
   name: string;
   subcategories: string[];
   imageUrl?: string;
+  emoji?: string;
+}
+
+export interface StatItem {
+  label: string;
+  value: string;
 }
 
 export interface AboutContent {
@@ -22,8 +28,28 @@ export interface AboutContent {
   intro: string;
   body: string;
   email: string;
-  address: string;
-  hours: string;
+  phone: string;
+  imageUrl?: string;
+  stats: StatItem[];
+}
+
+export interface HomeContent {
+  heroHeadline: string;
+  heroSubheadline: string;
+  heroImageUrl?: string;
+  stats: StatItem[];
+}
+
+export interface SiteImages {
+  logoUrl?: string;
+  heroImageUrl?: string;
+}
+
+export interface Partner {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  websiteUrl?: string;
 }
 
 export interface FooterContent {
@@ -32,6 +58,7 @@ export interface FooterContent {
   address: string;
   copyright: string;
   bottomRight: string;
+  shopCategoryIds: string[];
 }
 
 const DEFAULT_ABOUT: AboutContent = {
@@ -41,16 +68,36 @@ const DEFAULT_ABOUT: AboutContent = {
   body:
     "Every dollar of margin goes back into club activities: free tutoring, anatomy lab sessions, mental health programming, and outreach in the local community.",
   email: "store@medclub.edu",
-  address: "Student Union, Room 204",
-  hours: "Mon–Fri · 11am – 4pm",
+  phone: "+962 7 0000 0000",
+  imageUrl: "",
+  stats: [
+    { label: "Founded", value: "2019" },
+    { label: "Active members", value: "1,200+" },
+    { label: "Reinvested", value: "JOD 48k" },
+  ],
 };
+
+const DEFAULT_HOME: HomeContent = {
+  heroHeadline: "Everything you need for medical school.",
+  heroSubheadline:
+    "Stethoscopes, anatomy atlases, white coats and more — at student-friendly prices, shipped from campus.",
+  heroImageUrl: "",
+  stats: [
+    { label: "Members", value: "1,200+" },
+    { label: "Products", value: "80+" },
+    { label: "Avg. saving", value: "22%" },
+  ],
+};
+
+const DEFAULT_SITE: SiteImages = { logoUrl: "", heroImageUrl: "" };
 
 const DEFAULT_FOOTER: FooterContent = {
   tagline: "Equipment, books, and apparel — curated by med students, for med students.",
   email: "store@medclub.edu",
   address: "Student Union, Room 204",
-  copyright: `© ${new Date().getFullYear()} MedClub Store. All rights reserved.`,
+  copyright: "© {year} MedClub Store. All rights reserved.",
   bottomRight: "Built for students, by students.",
+  shopCategoryIds: [],
 };
 
 interface StoreContextValue {
@@ -58,21 +105,26 @@ interface StoreContextValue {
   categories: string[];
   categoryDocs: CategoryDoc[];
   getProduct: (id: string) => StoreProduct | undefined;
+  getCategoryEmoji: (name: string) => string;
   about: AboutContent;
+  home: HomeContent;
   footer: FooterContent;
+  site: SiteImages;
+  partners: Partner[];
   loading: boolean;
 }
 
 const StoreContext = createContext<StoreContextValue | undefined>(undefined);
 
-const seedAsStore: StoreProduct[] = seedProducts.map((p) => ({ ...p, source: "seed" as const }));
-
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [extraProducts, setExtraProducts] = useState<StoreProduct[]>([]);
+  const [products, setProducts] = useState<StoreProduct[]>([]);
   const [categoryDocs, setCategoryDocs] = useState<CategoryDoc[]>([]);
   const [hasCategoryDocs, setHasCategoryDocs] = useState(false);
   const [about, setAbout] = useState<AboutContent>(DEFAULT_ABOUT);
+  const [home, setHome] = useState<HomeContent>(DEFAULT_HOME);
   const [footer, setFooter] = useState<FooterContent>(DEFAULT_FOOTER);
+  const [site, setSite] = useState<SiteImages>(DEFAULT_SITE);
+  const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -91,12 +143,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             description: data.description ?? "",
             badge: data.badge,
             imageUrl: data.imageUrl,
-            source: "firestore",
           };
         });
-        setExtraProducts(list);
+        setProducts(list);
+        setLoading(false);
       },
-      () => {}
+      () => setLoading(false)
     );
     const unsubC = onSnapshot(
       collection(db, "categories"),
@@ -110,22 +162,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               name: (data.name as string) ?? d.id,
               subcategories: Array.isArray(data.subcategories) ? data.subcategories : [],
               imageUrl: data.imageUrl,
+              emoji: data.emoji,
             };
           })
         );
       },
       () => {}
     );
-    getDoc(doc(db, "content", "about"))
-      .then((s) => {
-        if (s.exists()) setAbout({ ...DEFAULT_ABOUT, ...(s.data() as Partial<AboutContent>) });
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
     const unsubAbout = onSnapshot(
       doc(db, "content", "about"),
       (s) => {
         if (s.exists()) setAbout({ ...DEFAULT_ABOUT, ...(s.data() as Partial<AboutContent>) });
+      },
+      () => {}
+    );
+    const unsubHome = onSnapshot(
+      doc(db, "content", "home"),
+      (s) => {
+        if (s.exists()) setHome({ ...DEFAULT_HOME, ...(s.data() as Partial<HomeContent>) });
       },
       () => {}
     );
@@ -136,18 +190,42 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       () => {}
     );
+    const unsubSite = onSnapshot(
+      doc(db, "content", "site"),
+      (s) => {
+        if (s.exists()) setSite({ ...DEFAULT_SITE, ...(s.data() as Partial<SiteImages>) });
+      },
+      () => {}
+    );
+    const unsubPartners = onSnapshot(
+      collection(db, "partners"),
+      (snap) => {
+        setPartners(
+          snap.docs.map((d) => {
+            const data = d.data() as Partial<Partner>;
+            return {
+              id: d.id,
+              name: data.name ?? "Partner",
+              logoUrl: data.logoUrl,
+              websiteUrl: data.websiteUrl,
+            };
+          })
+        );
+      },
+      () => {}
+    );
     return () => {
       unsubP();
       unsubC();
       unsubAbout();
+      unsubHome();
       unsubFooter();
+      unsubSite();
+      unsubPartners();
     };
   }, []);
 
   const value = useMemo<StoreContextValue>(() => {
-    const all = [...seedAsStore, ...extraProducts];
-    // Until any category doc exists in Firestore, fall back to seed categories
-    // so the storefront is not empty before the admin first opens the panel.
     const effectiveCategoryDocs: CategoryDoc[] = hasCategoryDocs
       ? categoryDocs
       : (seedCategories as string[]).map((name) => ({
@@ -156,16 +234,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           subcategories: [],
         }));
     const cats = effectiveCategoryDocs.map((c) => c.name);
+    const emojiByName = new Map(effectiveCategoryDocs.map((c) => [c.name, c.emoji]));
     return {
-      products: all,
+      products,
       categories: cats,
       categoryDocs: effectiveCategoryDocs,
-      getProduct: (id) => all.find((p) => p.id === id),
+      getProduct: (id) => products.find((p) => p.id === id),
+      getCategoryEmoji: (name) => emojiByName.get(name) || DEFAULT_CATEGORY_EMOJI,
       about,
+      home,
       footer,
+      site,
+      partners,
       loading,
     };
-  }, [extraProducts, categoryDocs, hasCategoryDocs, about, footer, loading]);
+  }, [products, categoryDocs, hasCategoryDocs, about, home, footer, site, partners, loading]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
