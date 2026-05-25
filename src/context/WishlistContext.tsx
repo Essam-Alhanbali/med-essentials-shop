@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { products, type Product } from "@/data/products";
+import { useStore, type StoreProduct } from "@/context/StoreContext";
 
 interface WishlistContextValue {
   ids: string[];
@@ -7,7 +7,7 @@ interface WishlistContextValue {
   toggle: (id: string) => void;
   remove: (id: string) => void;
   clear: () => void;
-  items: Product[];
+  items: StoreProduct[];
   count: number;
 }
 
@@ -16,6 +16,7 @@ const STORAGE_KEY = "medclub.wishlist.v1";
 
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [ids, setIds] = useState<string[]>([]);
+  const { products } = useStore();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -40,10 +41,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       clear: () => setIds([]),
       items: ids
         .map((id) => products.find((p) => p.id === id))
-        .filter(Boolean) as Product[],
+        .filter(Boolean) as StoreProduct[],
       count: ids.length,
     }),
-    [ids],
+    [ids, products],
   );
 
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;

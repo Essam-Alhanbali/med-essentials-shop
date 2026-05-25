@@ -2,8 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Mail, MapPin, Clock } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
+import { PartnersSection } from "@/components/site/PartnersSection";
 
 export const Route = createFileRoute("/about")({
   component: AboutPage,
@@ -65,17 +66,16 @@ function AboutPage() {
         </div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          {[
-            { k: "Founded", v: "2019" },
-            { k: "Active members", v: "1,200+" },
-            { k: "Reinvested", v: "$48k" },
-          ].map((s) => (
-            <div key={s.k} className="rounded-lg border border-border bg-card p-5">
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">{s.k}</div>
-              <div className="mt-1 text-2xl font-semibold tracking-tight">{s.v}</div>
+          {about.stats.map((s, i) => (
+            <div key={i} className="rounded-lg border border-border bg-card p-5">
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</div>
+              <div className="mt-1 text-2xl font-semibold tracking-tight">{s.value}</div>
             </div>
           ))}
         </div>
+        {about.imageUrl && (
+          <img src={about.imageUrl} alt="" className="mt-10 w-full rounded-lg border border-border object-cover" />
+        )}
       </div>
 
       {/* Contact + FAQ */}
@@ -92,12 +92,8 @@ function AboutPage() {
               <span>{about.email}</span>
             </li>
             <li className="flex items-start gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 text-primary" />
-              <span>{about.address}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <Clock className="mt-0.5 h-4 w-4 text-primary" />
-              <span>{about.hours}</span>
+              <Phone className="mt-0.5 h-4 w-4 text-primary" />
+              <span>{about.phone}</span>
             </li>
           </ul>
 
@@ -153,6 +149,7 @@ function AboutPage() {
           </div>
         </form>
       </div>
+      <PartnersSection title="Partners" />
     </div>
   );
 }

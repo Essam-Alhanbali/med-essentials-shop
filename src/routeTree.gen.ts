@@ -16,7 +16,15 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as ProductIdRouteImport } from './routes/product.$id'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminPartnersRouteImport } from './routes/admin.partners'
+import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
+import { Route as AdminImagesRouteImport } from './routes/admin.images'
+import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
+import { Route as AdminFooterRouteImport } from './routes/admin.footer'
+import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminAboutRouteImport } from './routes/admin.about'
 
 const WishlistRoute = WishlistRouteImport.update({
   id: '/wishlist',
@@ -53,9 +61,49 @@ const ProductIdRoute = ProductIdRouteImport.update({
   path: '/product/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/admin/products',
+  path: '/admin/products',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPartnersRoute = AdminPartnersRouteImport.update({
+  id: '/admin/partners',
+  path: '/admin/partners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOrdersRoute = AdminOrdersRouteImport.update({
+  id: '/admin/orders',
+  path: '/admin/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
   id: '/admin/login',
   path: '/admin/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminImagesRoute = AdminImagesRouteImport.update({
+  id: '/admin/images',
+  path: '/admin/images',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminHomepageRoute = AdminHomepageRouteImport.update({
+  id: '/admin/homepage',
+  path: '/admin/homepage',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminFooterRoute = AdminFooterRouteImport.update({
+  id: '/admin/footer',
+  path: '/admin/footer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
+  id: '/admin/categories',
+  path: '/admin/categories',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAboutRoute = AdminAboutRouteImport.update({
+  id: '/admin/about',
+  path: '/admin/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -65,7 +113,15 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/shop': typeof ShopRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/about': typeof AdminAboutRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/footer': typeof AdminFooterRoute
+  '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -75,7 +131,15 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/shop': typeof ShopRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/about': typeof AdminAboutRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/footer': typeof AdminFooterRoute
+  '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/product/$id': typeof ProductIdRoute
   '/admin': typeof AdminIndexRoute
 }
@@ -86,7 +150,15 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/shop': typeof ShopRoute
   '/wishlist': typeof WishlistRoute
+  '/admin/about': typeof AdminAboutRoute
+  '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/footer': typeof AdminFooterRoute
+  '/admin/homepage': typeof AdminHomepageRoute
+  '/admin/images': typeof AdminImagesRoute
   '/admin/login': typeof AdminLoginRoute
+  '/admin/orders': typeof AdminOrdersRoute
+  '/admin/partners': typeof AdminPartnersRoute
+  '/admin/products': typeof AdminProductsRoute
   '/product/$id': typeof ProductIdRoute
   '/admin/': typeof AdminIndexRoute
 }
@@ -98,7 +170,15 @@ export interface FileRouteTypes {
     | '/cart'
     | '/shop'
     | '/wishlist'
+    | '/admin/about'
+    | '/admin/categories'
+    | '/admin/footer'
+    | '/admin/homepage'
+    | '/admin/images'
     | '/admin/login'
+    | '/admin/orders'
+    | '/admin/partners'
+    | '/admin/products'
     | '/product/$id'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
@@ -108,7 +188,15 @@ export interface FileRouteTypes {
     | '/cart'
     | '/shop'
     | '/wishlist'
+    | '/admin/about'
+    | '/admin/categories'
+    | '/admin/footer'
+    | '/admin/homepage'
+    | '/admin/images'
     | '/admin/login'
+    | '/admin/orders'
+    | '/admin/partners'
+    | '/admin/products'
     | '/product/$id'
     | '/admin'
   id:
@@ -118,7 +206,15 @@ export interface FileRouteTypes {
     | '/cart'
     | '/shop'
     | '/wishlist'
+    | '/admin/about'
+    | '/admin/categories'
+    | '/admin/footer'
+    | '/admin/homepage'
+    | '/admin/images'
     | '/admin/login'
+    | '/admin/orders'
+    | '/admin/partners'
+    | '/admin/products'
     | '/product/$id'
     | '/admin/'
   fileRoutesById: FileRoutesById
@@ -129,7 +225,15 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   ShopRoute: typeof ShopRoute
   WishlistRoute: typeof WishlistRoute
+  AdminAboutRoute: typeof AdminAboutRoute
+  AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminFooterRoute: typeof AdminFooterRoute
+  AdminHomepageRoute: typeof AdminHomepageRoute
+  AdminImagesRoute: typeof AdminImagesRoute
   AdminLoginRoute: typeof AdminLoginRoute
+  AdminOrdersRoute: typeof AdminOrdersRoute
+  AdminPartnersRoute: typeof AdminPartnersRoute
+  AdminProductsRoute: typeof AdminProductsRoute
   ProductIdRoute: typeof ProductIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
@@ -185,11 +289,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/admin/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/partners': {
+      id: '/admin/partners'
+      path: '/admin/partners'
+      fullPath: '/admin/partners'
+      preLoaderRoute: typeof AdminPartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/orders': {
+      id: '/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AdminOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/login': {
       id: '/admin/login'
       path: '/admin/login'
       fullPath: '/admin/login'
       preLoaderRoute: typeof AdminLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/images': {
+      id: '/admin/images'
+      path: '/admin/images'
+      fullPath: '/admin/images'
+      preLoaderRoute: typeof AdminImagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/homepage': {
+      id: '/admin/homepage'
+      path: '/admin/homepage'
+      fullPath: '/admin/homepage'
+      preLoaderRoute: typeof AdminHomepageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/footer': {
+      id: '/admin/footer'
+      path: '/admin/footer'
+      fullPath: '/admin/footer'
+      preLoaderRoute: typeof AdminFooterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/categories': {
+      id: '/admin/categories'
+      path: '/admin/categories'
+      fullPath: '/admin/categories'
+      preLoaderRoute: typeof AdminCategoriesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/about': {
+      id: '/admin/about'
+      path: '/admin/about'
+      fullPath: '/admin/about'
+      preLoaderRoute: typeof AdminAboutRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -201,20 +361,18 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   ShopRoute: ShopRoute,
   WishlistRoute: WishlistRoute,
+  AdminAboutRoute: AdminAboutRoute,
+  AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminFooterRoute: AdminFooterRoute,
+  AdminHomepageRoute: AdminHomepageRoute,
+  AdminImagesRoute: AdminImagesRoute,
   AdminLoginRoute: AdminLoginRoute,
+  AdminOrdersRoute: AdminOrdersRoute,
+  AdminPartnersRoute: AdminPartnersRoute,
+  AdminProductsRoute: AdminProductsRoute,
   ProductIdRoute: ProductIdRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
