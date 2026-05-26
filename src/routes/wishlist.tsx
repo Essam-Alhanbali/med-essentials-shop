@@ -4,6 +4,7 @@ import { useWishlist } from "@/context/WishlistContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/price";
+import { useStore } from "@/context/StoreContext";
 
 export const Route = createFileRoute("/wishlist")({
   component: WishlistPage,
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/wishlist")({
 function WishlistPage() {
   const { items, remove, clear } = useWishlist();
   const { add } = useCart();
+  const { getCategoryEmoji } = useStore();
 
   if (items.length === 0) {
     return (
@@ -63,11 +65,7 @@ function WishlistPage() {
               params={{ id: product.id }}
               className="grid h-20 w-20 flex-shrink-0 place-items-center rounded-md bg-secondary text-3xl"
             >
-              {product.category === "Diagnostics" && "🩺"}
-              {product.category === "Anatomy" && "🦴"}
-              {product.category === "Apparel" && "🥼"}
-              {product.category === "Stationery" && "📓"}
-              {product.category === "Surgical" && "✂️"}
+              {getCategoryEmoji(product.category)}
             </Link>
             <div className="flex flex-1 flex-col">
               <div className="flex items-start justify-between gap-2">

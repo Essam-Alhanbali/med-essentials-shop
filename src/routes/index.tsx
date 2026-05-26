@@ -4,6 +4,7 @@ import { ArrowRight, Truck, ShieldCheck, GraduationCap } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/site/ProductCard";
+import { PartnersSection } from "@/components/site/PartnersSection";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -16,8 +17,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { products, categories } = useStore();
+  const { products, categoryDocs, home, site, getCategoryEmoji } = useStore();
   const featured = products.slice(0, 6);
+  const heroSrc = site.heroImageUrl || home.heroImageUrl || heroImg;
   return (
     <div>
       {/* Hero */}
@@ -29,11 +31,10 @@ function Index() {
               Curated by your med school club
             </span>
             <h1 className="mt-5 text-4xl font-semibold leading-[1.05] tracking-tight text-foreground md:text-6xl">
-              Everything you need <br className="hidden md:block" />
-              for medical school.
+              {home.heroHeadline}
             </h1>
             <p className="mt-5 max-w-md text-base text-muted-foreground md:text-lg">
-              Stethoscopes, anatomy atlases, white coats and more — at student-friendly prices, shipped from campus.
+              {home.heroSubheadline}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link
@@ -51,14 +52,10 @@ function Index() {
               </Link>
             </div>
             <dl className="mt-10 grid max-w-md grid-cols-3 gap-6">
-              {[
-                { k: "Members", v: "1,200+" },
-                { k: "Products", v: "80+" },
-                { k: "Avg. saving", v: "22%" },
-              ].map((s) => (
-                <div key={s.k}>
-                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">{s.k}</dt>
-                  <dd className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{s.v}</dd>
+              {home.stats.map((s, i) => (
+                <div key={i}>
+                  <dt className="text-xs uppercase tracking-wider text-muted-foreground">{s.label}</dt>
+                  <dd className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{s.value}</dd>
                 </div>
               ))}
             </dl>
@@ -67,7 +64,7 @@ function Index() {
             <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-transparent blur-2xl" />
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <img
-                src={heroImg}
+                src={heroSrc}
                 alt="Medical equipment essentials"
                 width={1536}
                 height={1024}
@@ -111,21 +108,15 @@ function Index() {
           </Link>
         </div>
         <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-5">
-          {(categories as string[]).map((c) => (
+          {categoryDocs.map((c) => (
             <Link
-              key={c}
+              key={c.id}
               to="/shop"
-              search={{ category: c }}
+              search={{ category: c.name }}
               className="group rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/40 hover:bg-accent"
             >
-              <div className="text-2xl">
-                {c === "Diagnostics" && "🩺"}
-                {c === "Anatomy" && "🦴"}
-                {c === "Apparel" && "🥼"}
-                {c === "Stationery" && "📓"}
-                {c === "Surgical" && "✂️"}
-              </div>
-              <div className="mt-3 text-sm font-medium text-foreground">{c}</div>
+              <div className="text-2xl">{c.emoji || getCategoryEmoji(c.name)}</div>
+              <div className="mt-3 text-sm font-medium text-foreground">{c.name}</div>
               <div className="text-xs text-muted-foreground group-hover:text-primary">Browse →</div>
             </Link>
           ))}
@@ -146,6 +137,7 @@ function Index() {
           ))}
         </div>
       </section>
+      <PartnersSection title="Sponsored by" />
     </div>
   );
 }

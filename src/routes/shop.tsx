@@ -23,7 +23,7 @@ type Sort = "featured" | "price-asc" | "price-desc" | "name";
 
 function ShopPage() {
   const { category } = Route.useSearch();
-  const { products, categories } = useStore();
+  const { products, categoryDocs, getCategoryEmoji } = useStore();
   const [sort, setSort] = useState<Sort>("featured");
   const [active, setActive] = useState<string | undefined>(category);
 
@@ -77,17 +77,17 @@ function ShopPage() {
                 All
               </button>
             </li>
-            {categories.map((c) => (
-              <li key={c}>
+            {categoryDocs.map((c) => (
+              <li key={c.id}>
                 <button
-                  onClick={() => setActive(c)}
+                  onClick={() => setActive(c.name)}
                   className={`w-full rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                    active === c
+                    active === c.name
                       ? "bg-accent text-foreground"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {c}
+                  <span className="mr-1.5">{c.emoji || getCategoryEmoji(c.name)}</span>{c.name}
                 </button>
               </li>
             ))}

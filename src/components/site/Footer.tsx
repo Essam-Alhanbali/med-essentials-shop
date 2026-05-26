@@ -2,7 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { useStore } from "@/context/StoreContext";
 
 export function Footer() {
-  const { footer } = useStore();
+  const { footer, categoryDocs } = useStore();
+  const selected = footer.shopCategoryIds.length
+    ? categoryDocs.filter((c) => footer.shopCategoryIds.includes(c.id))
+    : categoryDocs;
+  const year = new Date().getFullYear();
   return (
     <footer className="mt-24 border-t border-border/60">
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-4">
@@ -19,9 +23,13 @@ export function Footer() {
           <h4 className="text-xs font-semibold uppercase tracking-wider text-foreground">Shop</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li><Link to="/shop" className="hover:text-foreground">All products</Link></li>
-            <li><Link to="/shop" className="hover:text-foreground">Diagnostics</Link></li>
-            <li><Link to="/shop" className="hover:text-foreground">Apparel</Link></li>
-            <li><Link to="/shop" className="hover:text-foreground">Anatomy</Link></li>
+            {selected.map((c) => (
+              <li key={c.id}>
+                <Link to="/shop" search={{ category: c.name }} className="hover:text-foreground">
+                  <span className="mr-1">{c.emoji ?? "📦"}</span>{c.name}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         <div>
@@ -40,7 +48,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border/60">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-6 py-5 text-xs text-muted-foreground sm:flex-row">
-          <span>{footer.copyright}</span>
+          <span>{footer.copyright.replace("{year}", String(year))}</span>
           <span>{footer.bottomRight}</span>
         </div>
       </div>

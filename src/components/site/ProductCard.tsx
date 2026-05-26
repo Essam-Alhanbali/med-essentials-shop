@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
-import type { StoreProduct } from "@/context/StoreContext";
+import { useStore, type StoreProduct } from "@/context/StoreContext";
 import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/price";
@@ -17,6 +17,7 @@ const accentByCategory: Record<string, string> = {
 export function ProductCard({ product }: { product: StoreProduct }) {
   const { add } = useCart();
   const { has, toggle } = useWishlist();
+  const { getCategoryEmoji } = useStore();
   const wished = has(product.id);
 
   return (
@@ -48,20 +49,13 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
         ) : (
           <div className="text-center font-semibold tracking-tight text-foreground/70">
-            <div className="text-5xl">
-              {product.category === "Diagnostics" && "🩺"}
-              {product.category === "Anatomy" && "🦴"}
-              {product.category === "Apparel" && "🥼"}
-              {product.category === "Stationery" && "📓"}
-              {product.category === "Surgical" && "📦"}
-              {!["Diagnostics","Anatomy","Apparel","Stationery","Surgical"].includes(product.category) && "📦"}
-            </div>
+            <div className="text-5xl">{getCategoryEmoji(product.category)}</div>
           </div>
         )}
       </Link>
       <div className="flex flex-1 flex-col p-5">
-        <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          {product.category}
+        <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground inline-flex items-center gap-1">
+          <span>{getCategoryEmoji(product.category)}</span> {product.category}
         </div>
         <Link to="/product/$id" params={{ id: product.id }}>
           <h3 className="mt-1 text-[15px] font-semibold leading-snug text-foreground hover:text-primary">

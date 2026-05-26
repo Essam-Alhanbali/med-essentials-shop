@@ -21,7 +21,7 @@ export const Route = createFileRoute("/product/$id")({
 
 function ProductPage() {
   const { id } = Route.useParams();
-  const { getProduct } = useStore();
+  const { getProduct, getCategoryEmoji } = useStore();
   const product = getProduct(id);
   const { add } = useCart();
   const [qty, setQty] = useState(1);
@@ -50,13 +50,7 @@ function ProductPage() {
           {product.imageUrl ? (
             <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
           ) : (
-            <div className="text-9xl">
-              {product.category === "Diagnostics" && "🩺"}
-              {product.category === "Anatomy" && "🦴"}
-              {product.category === "Apparel" && "🥼"}
-              {product.category === "Stationery" && "📓"}
-              {product.category === "Surgical" && "✂️"}
-            </div>
+            <div className="text-9xl">{getCategoryEmoji(product.category)}</div>
           )}
         </div>
         <div>

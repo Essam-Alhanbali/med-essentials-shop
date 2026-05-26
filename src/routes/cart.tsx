@@ -5,6 +5,9 @@ import { z } from "zod";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/price";
+import { useStore } from "@/context/StoreContext";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export const Route = createFileRoute("/cart")({
   component: CartPage,
@@ -15,6 +18,7 @@ export const Route = createFileRoute("/cart")({
 
 function CartPage() {
   const { detailed, setQty, remove, subtotal, clear } = useCart();
+  const { getCategoryEmoji } = useStore();
   const total = subtotal;
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
@@ -50,11 +54,11 @@ function CartPage() {
                 params={{ id: product.id }}
                 className="grid h-20 w-20 flex-shrink-0 place-items-center rounded-md bg-secondary text-3xl"
               >
-                {product.category === "Diagnostics" && "🩺"}
-                {product.category === "Anatomy" && "🦴"}
-                {product.category === "Apparel" && "🥼"}
-                {product.category === "Stationery" && "📓"}
-                {product.category === "Surgical" && "✂️"}
+                {product.imageUrl ? (
+                  <img src={product.imageUrl} alt={product.name} className="h-full w-full rounded-md object-cover" />
+                ) : (
+                  getCategoryEmoji(product.category)
+                )}
               </Link>
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between gap-2">
@@ -139,6 +143,12 @@ function CartPage() {
       {checkoutOpen && (
         <CheckoutDialog
           total={total}
+          items={detailed.map(({ product, quantity }) => ({
+            productId: product.id,
+            name: product.name,
+            price: product.price,
+            quantity,
+          }))}
           onClose={() => setCheckoutOpen(false)}
           onSubmitted={() => {
             clear();
@@ -170,6 +180,7 @@ const checkoutSchema = z.object({
     .min(2, "Please enter your full name")
     .max(100)
     .regex(ENGLISH_ONLY, "English characters only"),
+  email: z.string().trim().email("Enter a valid email").max(255),
   phone: z
     .string()
     .trim()
@@ -187,22 +198,26 @@ const checkoutSchema = z.object({
 
 function CheckoutDialog({
   total,
+  items,
   onClose,
   onSubmitted,
 }: {
   total: number;
+  items: { productId: string; name: string; price: number; quantity: number }[];
   onClose: () => void;
   onSubmitted: () => void;
 }) {
   const [form, setForm] = useState({
     fullName: "",
+    email: "",
     phone: "",
     academicYear: "",
     residence: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const result = checkoutSchema.safeParse(form);
     if (!result.success) {
@@ -214,8 +229,27 @@ function CheckoutDialog({
       setErrors(next);
       return;
     }
-    toast.success(`Thanks, ${result.data.fullName}! We'll be in touch shortly.`);
-    onSubmitted();
+    setSubmitting(true);
+    try {
+      await addDoc(collection(db, "orders"), {
+        fullName: result.data.fullName,
+        email: result.data.email,
+        phone: result.data.phone,
+        academicYear: result.data.academicYear,
+        address: result.data.residence,
+        items,
+        total,
+        status: "Pending",
+        createdAt: Date.now(),
+        createdAtServer: serverTimestamp(),
+      });
+      toast.success(`Thanks, ${result.data.fullName}! Your order was placed.`);
+      onSubmitted();
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to place order");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -249,6 +283,14 @@ function CheckoutDialog({
             onChange={(v) => setForm((f) => ({ ...f, fullName: v }))}
             error={errors.fullName}
             placeholder="Jane Doe"
+          />
+          <Field
+            label="Email"
+            value={form.email}
+            onChange={(v) => setForm((f) => ({ ...f, email: v }))}
+            error={errors.email}
+            placeholder="you@example.com"
+            inputMode="email"
           />
           <Field
             label="Phone number"
@@ -288,9 +330,10 @@ function CheckoutDialog({
           </p>
           <button
             type="submit"
+            disabled={submitting}
             className="inline-flex h-11 w-full items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            Place order
+            {submitting ? "Placing order…" : "Place order"}
           </button>
         </form>
       </div>
