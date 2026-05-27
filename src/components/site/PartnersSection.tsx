@@ -15,7 +15,7 @@ export function PartnersSection({ title }: { title: string }) {
               <img
                 src={p.logoUrl}
                 alt={p.name}
-                className="h-16 w-auto max-w-[180px] object-contain opacity-80 transition-opacity hover:opacity-100"
+                className="h-28 w-auto max-w-[280px] object-contain opacity-90 transition-opacity hover:opacity-100"
               />
             ) : (
               <span className="text-base font-semibold text-muted-foreground">

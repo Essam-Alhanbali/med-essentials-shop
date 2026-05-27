@@ -81,7 +81,7 @@ function Index() {
           {home.features.map((f, i) => (
             <div key={i} className="flex items-start gap-3">
               <div className="grid h-9 w-9 place-items-center rounded-md bg-background text-primary">
-                <span className="text-sm font-bold">✓</span>
+                <span className="text-lg">{f.icon || "✓"}</span>
               </div>
               <div>
                 <div className="text-sm font-semibold text-foreground">{f.title}</div>

@@ -15,12 +15,12 @@ export function Footer() {
             <h4 className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Sponsored by
             </h4>
-            <div className="mt-5 flex flex-wrap items-center justify-center gap-6 md:gap-10">
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-8 md:gap-14">
               {partners.map((p) => {
                 const inner = p.logoUrl ? (
-                  <img src={p.logoUrl} alt={p.name} className="h-10 w-auto max-w-[140px] object-contain opacity-80 transition-opacity hover:opacity-100" />
+                  <img src={p.logoUrl} alt={p.name} className="h-20 w-auto max-w-[240px] object-contain opacity-90 transition-opacity hover:opacity-100" />
                 ) : (
-                  <span className="text-sm font-semibold text-muted-foreground">{p.name}</span>
+                  <span className="text-base font-semibold text-muted-foreground">{p.name}</span>
                 );
                 return p.websiteUrl ? (
                   <a key={p.id} href={p.websiteUrl} target="_blank" rel="noopener noreferrer" title={p.name}>{inner}</a>

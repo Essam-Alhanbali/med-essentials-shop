@@ -24,6 +24,7 @@ export interface StatItem {
 }
 
 export interface FeatureItem {
+  icon?: string;
   title: string;
   description: string;
 }
@@ -95,9 +96,9 @@ const DEFAULT_HOME: HomeContent = {
     { label: "Avg. saving", value: "22%" },
   ],
   features: [
-    { title: "Free campus pickup", description: "Order online, pick up at the Student Union." },
-    { title: "Authentic & warrantied", description: "Sourced directly from manufacturers." },
-    { title: "Student pricing", description: "No markup — club covers the overhead." },
+    { icon: "🚚", title: "Free campus pickup", description: "Order online, pick up at the Student Union." },
+    { icon: "🛡️", title: "Authentic & warrantied", description: "Sourced directly from manufacturers." },
+    { icon: "🎓", title: "Student pricing", description: "No markup — club covers the overhead." },
   ],
 };
 
