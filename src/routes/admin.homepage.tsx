@@ -60,7 +60,9 @@ function HomepageAdminPage() {
                 setDraft({ ...draft, features: next });
               };
               return (
-                <div key={i} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+                <div key={i} className="grid gap-2 sm:grid-cols-[80px_1fr_2fr_auto]">
+                  <input value={f.icon ?? ""} onChange={(e) => update({ icon: e.target.value })} placeholder="Icon"
+                    className="h-10 rounded-md border border-border bg-background px-3 text-center text-lg" />
                   <input value={f.title} onChange={(e) => update({ title: e.target.value })} placeholder="Title"
                     className="h-10 rounded-md border border-border bg-background px-3 text-sm" />
                   <input value={f.description} onChange={(e) => update({ description: e.target.value })} placeholder="Description"
@@ -73,7 +75,7 @@ function HomepageAdminPage() {
                 </div>
               );
             })}
-            <button type="button" onClick={() => setDraft({ ...draft, features: [...draft.features, { title: "New", description: "" }] })}
+            <button type="button" onClick={() => setDraft({ ...draft, features: [...draft.features, { icon: "✨", title: "New", description: "" }] })}
               className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-accent">
               <Plus className="h-3.5 w-3.5" /> Add feature
             </button>
