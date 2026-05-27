@@ -22,19 +22,20 @@ export function PartnersSection({ title }: { title: string }) {
                 {p.name}
               </span>
             );
-            return p.websiteUrl ? (
-              <a
-                key={p.id}
-                href={p.websiteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={p.name}
-              >
+            const link = p.websiteUrl ? (
+              <a href={p.websiteUrl} target="_blank" rel="noopener noreferrer" title={p.name}>
                 {inner}
               </a>
             ) : (
-              <div key={p.id} title={p.name}>
-                {inner}
+              <div title={p.name}>{inner}</div>
+            );
+            return (
+              <div key={p.id} className="flex max-w-[220px] flex-col items-center gap-2 text-center">
+                {link}
+                {p.logoUrl && <div className="text-sm font-medium text-foreground">{p.name}</div>}
+                {p.description && (
+                  <p className="text-xs text-muted-foreground">{p.description}</p>
+                )}
               </div>
             );
           })}
