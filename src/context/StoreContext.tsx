@@ -23,6 +23,11 @@ export interface StatItem {
   value: string;
 }
 
+export interface FeatureItem {
+  title: string;
+  description: string;
+}
+
 export interface AboutContent {
   heading: string;
   intro: string;
