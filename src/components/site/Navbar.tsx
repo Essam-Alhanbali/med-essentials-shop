@@ -3,6 +3,7 @@ import { ShoppingBag, Menu, Heart, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useAuth } from "@/context/AuthContext";
+import { useStore } from "@/context/StoreContext";
 import { useState } from "react";
 
 const nav = [
@@ -16,15 +17,20 @@ export function Navbar() {
   const { totalItems } = useCart();
   const { count: wishCount } = useWishlist();
   const { user } = useAuth();
+  const { site } = useStore();
   const [open, setOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link to="/" className="flex items-center gap-2 text-base font-semibold tracking-tight">
-          <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-            <span className="text-sm font-bold">+</span>
-          </span>
+          {site.logoUrl ? (
+            <img src={site.logoUrl} alt="MedClub Store" className="h-7 w-7 rounded-md object-cover" />
+          ) : (
+            <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
+              <span className="text-sm font-bold">+</span>
+            </span>
+          )}
           <span>MedClub Store</span>
         </Link>
 
