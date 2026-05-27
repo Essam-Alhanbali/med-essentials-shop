@@ -2,19 +2,46 @@ import { Link } from "@tanstack/react-router";
 import { useStore } from "@/context/StoreContext";
 
 export function Footer() {
-  const { footer, categoryDocs } = useStore();
+  const { footer, categoryDocs, site, partners } = useStore();
   const selected = footer.shopCategoryIds.length
     ? categoryDocs.filter((c) => footer.shopCategoryIds.includes(c.id))
     : categoryDocs;
   const year = new Date().getFullYear();
   return (
     <footer className="mt-24 border-t border-border/60">
+      {partners.length > 0 && (
+        <div className="border-b border-border/60 bg-secondary/30">
+          <div className="mx-auto max-w-7xl px-6 py-8">
+            <h4 className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Sponsored by
+            </h4>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-6 md:gap-10">
+              {partners.map((p) => {
+                const inner = p.logoUrl ? (
+                  <img src={p.logoUrl} alt={p.name} className="h-10 w-auto max-w-[140px] object-contain opacity-80 transition-opacity hover:opacity-100" />
+                ) : (
+                  <span className="text-sm font-semibold text-muted-foreground">{p.name}</span>
+                );
+                return p.websiteUrl ? (
+                  <a key={p.id} href={p.websiteUrl} target="_blank" rel="noopener noreferrer" title={p.name}>{inner}</a>
+                ) : (
+                  <div key={p.id} title={p.name}>{inner}</div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-            <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-              +
-            </span>
+            {site.logoUrl ? (
+              <img src={site.logoUrl} alt="MedClub Store" className="h-6 w-6 rounded-md object-cover" />
+            ) : (
+              <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
+                +
+              </span>
+            )}
             MedClub Store
           </div>
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">{footer.tagline}</p>
