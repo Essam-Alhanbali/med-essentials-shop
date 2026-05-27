@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Truck, ShieldCheck, GraduationCap } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -78,18 +78,14 @@ function Index() {
       {/* Value props */}
       <section className="border-y border-border/60 bg-secondary/40">
         <div className="mx-auto grid max-w-7xl gap-8 px-6 py-10 sm:grid-cols-3">
-          {[
-            { icon: Truck, t: "Free campus pickup", d: "Order online, pick up at the Student Union." },
-            { icon: ShieldCheck, t: "Authentic & warrantied", d: "Sourced directly from manufacturers." },
-            { icon: GraduationCap, t: "Student pricing", d: "No markup — club covers the overhead." },
-          ].map(({ icon: Icon, t, d }) => (
-            <div key={t} className="flex items-start gap-3">
+          {home.features.map((f, i) => (
+            <div key={i} className="flex items-start gap-3">
               <div className="grid h-9 w-9 place-items-center rounded-md bg-background text-primary">
-                <Icon className="h-4 w-4" />
+                <span className="text-sm font-bold">✓</span>
               </div>
               <div>
-                <div className="text-sm font-semibold text-foreground">{t}</div>
-                <div className="text-sm text-muted-foreground">{d}</div>
+                <div className="text-sm font-semibold text-foreground">{f.title}</div>
+                <div className="text-sm text-muted-foreground">{f.description}</div>
               </div>
             </div>
           ))}
