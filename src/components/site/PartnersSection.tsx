@@ -5,36 +5,48 @@ export function PartnersSection({ title }: { title: string }) {
   if (!partners.length) return null;
   return (
     <section className="border-t border-border/60 bg-secondary/30">
-      <div className="mx-auto max-w-7xl px-6 py-16">
-        <h2 className="text-center text-2xl font-semibold tracking-tight md:text-3xl">
-          {title}
-        </h2>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-8 md:gap-12">
+      <div className="mx-auto max-w-6xl px-6 py-16">
+        <div className="max-w-3xl">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Partners</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">{title}</h2>
+          <p className="mt-4 text-base text-muted-foreground">
+            We're proud to collaborate with organizations that support our mission and our students.
+          </p>
+        </div>
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {partners.map((p) => {
-            const inner = p.logoUrl ? (
+            const logo = p.logoUrl ? (
               <img
                 src={p.logoUrl}
                 alt={p.name}
-                className="h-28 w-auto max-w-[280px] object-contain opacity-90 transition-opacity hover:opacity-100"
+                className="h-20 w-auto max-w-[200px] object-contain"
               />
-            ) : (
-              <span className="text-base font-semibold text-muted-foreground">
-                {p.name}
-              </span>
-            );
-            const link = p.websiteUrl ? (
-              <a href={p.websiteUrl} target="_blank" rel="noopener noreferrer" title={p.name}>
-                {inner}
-              </a>
-            ) : (
-              <div title={p.name}>{inner}</div>
+            ) : null;
+            const content = (
+              <>
+                <div className="flex h-24 items-center">{logo}</div>
+                <div className="mt-2 text-base font-semibold tracking-tight text-foreground">{p.name}</div>
+                {p.description && (
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.description}</p>
+                )}
+              </>
             );
             return (
-              <div key={p.id} className="flex max-w-[220px] flex-col items-center gap-2 text-center">
-                {link}
-                {p.logoUrl && <div className="text-sm font-medium text-foreground">{p.name}</div>}
-                {p.description && (
-                  <p className="text-xs text-muted-foreground">{p.description}</p>
+              <div
+                key={p.id}
+                className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-primary/40"
+              >
+                {p.websiteUrl ? (
+                  <a
+                    href={p.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    {content}
+                  </a>
+                ) : (
+                  content
                 )}
               </div>
             );

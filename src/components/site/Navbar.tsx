@@ -9,8 +9,8 @@ import { useState } from "react";
 const nav = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
-  { to: "/wishlist", label: "Wishlist" },
   { to: "/about", label: "About Us" },
+  { to: "/contact", label: "Contact" },
 ] as const;
 
 export function Navbar() {
