@@ -4,7 +4,6 @@ import { ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/site/ProductCard";
-import { PartnersSection } from "@/components/site/PartnersSection";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -133,7 +132,6 @@ function Index() {
           ))}
         </div>
       </section>
-      <PartnersSection title="Sponsored by" />
     </div>
   );
 }
