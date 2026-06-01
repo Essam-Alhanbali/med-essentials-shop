@@ -26,6 +26,7 @@ function ImagesAdminPage() {
     <AdminLayout title="Images" description="Global site images.">
       <div className="space-y-5 rounded-lg border border-border bg-card p-5">
         <ImageInput value={draft.logoUrl ?? ""} onChange={(url) => setDraft({ ...draft, logoUrl: url })} folder="site" label="Website logo (replaces the + icon)" />
+        <ImageInput value={draft.poweredByLogoUrl ?? ""} onChange={(url) => setDraft({ ...draft, poweredByLogoUrl: url })} folder="site" label="Intro 'Powered by' logo" />
         <ImageInput value={draft.heroImageUrl ?? ""} onChange={(url) => setDraft({ ...draft, heroImageUrl: url })} folder="site" label="Homepage hero image" />
         <button onClick={save} className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90">Save changes</button>
       </div>
