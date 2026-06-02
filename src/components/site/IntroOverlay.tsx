@@ -10,22 +10,21 @@ export function IntroOverlay() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (sessionStorage.getItem(SESSION_KEY)) return;
-    sessionStorage.setItem(SESSION_KEY, "1");
     setStage("in");
-    const outTimer = setTimeout(() => setStage("out"), 3200);
-    const doneTimer = setTimeout(() => setStage("hidden"), 4400);
-    return () => {
-      clearTimeout(outTimer);
-      clearTimeout(doneTimer);
-    };
   }, []);
 
   if (stage === "hidden") return null;
 
+  const handleContinue = () => {
+    sessionStorage.setItem(SESSION_KEY, "1");
+    setStage("out");
+    setTimeout(() => setStage("hidden"), 900);
+  };
+
   return (
     <div
       aria-hidden
-      className={`pointer-events-none fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-[900ms] ease-out ${
+      className={`fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-[900ms] ease-out ${
         stage === "out" ? "opacity-0" : "opacity-100"
       }`}
       style={{
@@ -69,6 +68,14 @@ export function IntroOverlay() {
             <span className="text-base font-medium text-foreground md:text-lg">Your Partner</span>
           )}
         </div>
+        <button
+          type="button"
+          onClick={handleContinue}
+          disabled={stage === "out"}
+          className="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:opacity-50"
+        >
+          Continue
+        </button>
       </div>
       <style>{`
         @keyframes introFadeUp {
