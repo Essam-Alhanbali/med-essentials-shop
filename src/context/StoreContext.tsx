@@ -45,6 +45,7 @@ export interface HomeContent {
   heroImageUrl?: string;
   stats: StatItem[];
   features: FeatureItem[];
+  featuredProductIds?: string[];
 }
 
 export interface SiteImages {
@@ -101,6 +102,7 @@ const DEFAULT_HOME: HomeContent = {
     { icon: "🛡️", title: "Authentic & warrantied", description: "Sourced directly from manufacturers." },
     { icon: "🎓", title: "Student pricing", description: "No markup — club covers the overhead." },
   ],
+  featuredProductIds: [],
 };
 
 const DEFAULT_SITE: SiteImages = { logoUrl: "", heroImageUrl: "", poweredByLogoUrl: "" };
