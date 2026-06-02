@@ -14,7 +14,7 @@ const accentByCategory: Record<string, string> = {
   Surgical: "from-emerald-50 to-white",
 };
 
-export function ProductCard({ product }: { product: StoreProduct }) {
+export function ProductCard({ product, priority = false }: { product: StoreProduct; priority?: boolean }) {
   const { add } = useCart();
   const { has, toggle } = useWishlist();
   const { getCategoryEmoji } = useStore();
@@ -46,7 +46,14 @@ export function ProductCard({ product }: { product: StoreProduct }) {
           <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : ""}`} />
         </button>
         {product.imageUrl ? (
-          <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="text-center font-semibold tracking-tight text-foreground/70">
             <div className="text-5xl">{getCategoryEmoji(product.category)}</div>

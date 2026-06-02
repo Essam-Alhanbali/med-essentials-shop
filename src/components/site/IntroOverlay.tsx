@@ -12,8 +12,8 @@ export function IntroOverlay() {
     if (sessionStorage.getItem(SESSION_KEY)) return;
     sessionStorage.setItem(SESSION_KEY, "1");
     setStage("in");
-    const outTimer = setTimeout(() => setStage("out"), 1800);
-    const doneTimer = setTimeout(() => setStage("hidden"), 2700);
+    const outTimer = setTimeout(() => setStage("out"), 3200);
+    const doneTimer = setTimeout(() => setStage("hidden"), 4400);
     return () => {
       clearTimeout(outTimer);
       clearTimeout(doneTimer);
@@ -57,16 +57,16 @@ export function IntroOverlay() {
             Medical Club Store
           </h1>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground md:text-sm">
+        <div className="flex items-center gap-3 text-sm text-muted-foreground md:text-base">
           <span>powered by</span>
           {site.poweredByLogoUrl ? (
             <img
               src={site.poweredByLogoUrl}
               alt="Powered by"
-              className="h-5 w-auto max-w-[120px] object-contain md:h-6"
+              className="h-10 w-auto max-w-[200px] object-contain md:h-12"
             />
           ) : (
-            <span className="font-medium text-foreground">Your Partner</span>
+            <span className="text-base font-medium text-foreground md:text-lg">Your Partner</span>
           )}
         </div>
       </div>

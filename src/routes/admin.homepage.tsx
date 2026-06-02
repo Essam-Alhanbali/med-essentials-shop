@@ -15,7 +15,7 @@ export const Route = createFileRoute("/admin/homepage")({
 });
 
 function HomepageAdminPage() {
-  const { home } = useStore();
+  const { home, products } = useStore();
   const [draft, setDraft] = useState<HomeContent>(home);
   useEffect(() => setDraft(home), [home]);
 
@@ -79,6 +79,30 @@ function HomepageAdminPage() {
               className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-accent">
               <Plus className="h-3.5 w-3.5" /> Add feature
             </button>
+          </div>
+        </div>
+        <div>
+          <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Featured products</div>
+          <p className="mt-1 text-xs text-muted-foreground">Pick which products appear in the "Featured this semester" section. Leave empty to auto-pick the first 6.</p>
+          <div className="mt-2 max-h-72 space-y-1 overflow-auto rounded-md border border-border bg-background p-2">
+            {products.length === 0 && <p className="p-2 text-xs text-muted-foreground">No products yet.</p>}
+            {products.map((p) => {
+              const selected = (draft.featuredProductIds ?? []).includes(p.id);
+              const toggle = () => {
+                const cur = draft.featuredProductIds ?? [];
+                setDraft({
+                  ...draft,
+                  featuredProductIds: selected ? cur.filter((id) => id !== p.id) : [...cur, p.id],
+                });
+              };
+              return (
+                <label key={p.id} className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent">
+                  <input type="checkbox" checked={selected} onChange={toggle} className="h-4 w-4" />
+                  <span className="flex-1 truncate">{p.name}</span>
+                  <span className="text-xs text-muted-foreground">{p.category}</span>
+                </label>
+              );
+            })}
           </div>
         </div>
         <button onClick={save} className="inline-flex h-10 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/90">

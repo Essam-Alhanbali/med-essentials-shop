@@ -17,7 +17,12 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { products, categoryDocs, home, site, getCategoryEmoji } = useStore();
-  const featured = products.slice(0, 6);
+  const featuredIds = home.featuredProductIds ?? [];
+  const featured = featuredIds.length
+    ? featuredIds
+        .map((id) => products.find((p) => p.id === id))
+        .filter((p): p is typeof products[number] => Boolean(p))
+    : products.slice(0, 6);
   const heroSrc = site.heroImageUrl || home.heroImageUrl || heroImg;
   return (
     <div>
@@ -67,6 +72,9 @@ function Index() {
                 alt="Medical equipment essentials"
                 width={1536}
                 height={1024}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="h-full w-full object-cover"
               />
             </div>
@@ -127,8 +135,8 @@ function Index() {
           </Link>
         </div>
         <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {featured.map((p) => (
-            <ProductCard key={p.id} product={p} />
+          {featured.map((p, i) => (
+            <ProductCard key={p.id} product={p} priority={i < 3} />
           ))}
         </div>
       </section>
