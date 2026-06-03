@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useStore } from "@/context/StoreContext";
 import { ProductCard } from "@/components/site/ProductCard";
+import { getImageUrl, getImageSrcSet } from "@/lib/getImageUrl";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -68,7 +69,9 @@ function Index() {
             <div className="absolute -inset-6 -z-10 rounded-3xl bg-gradient-to-br from-primary/10 via-transparent to-transparent blur-2xl" />
             <div className="overflow-hidden rounded-2xl border border-border bg-card">
               <img
-                src={heroSrc}
+                src={getImageUrl(heroSrc, { w: 1200 }) || heroSrc}
+                srcSet={getImageSrcSet(heroSrc, [640, 960, 1200, 1536])}
+                sizes="(min-width: 768px) 50vw, 100vw"
                 alt="Medical equipment essentials"
                 width={1536}
                 height={1024}
