@@ -5,6 +5,7 @@ import { useStore } from "@/context/StoreContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/price";
+import { getImageUrl, getImageSrcSet } from "@/lib/getImageUrl";
 
 export const Route = createFileRoute("/product/$id")({
   component: ProductPage,
@@ -48,7 +49,18 @@ function ProductPage() {
       <div className="mt-6 grid gap-12 md:grid-cols-2">
         <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary to-background">
           {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
+            <img
+              src={getImageUrl(product.imageUrl, { w: 960 })}
+              srcSet={getImageSrcSet(product.imageUrl, [640, 960, 1200])}
+              sizes="(min-width: 768px) 50vw, 100vw"
+              alt={product.name}
+              width={1200}
+              height={1200}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="h-full w-full object-cover"
+            />
           ) : (
             <div className="text-9xl">{getCategoryEmoji(product.category)}</div>
           )}
