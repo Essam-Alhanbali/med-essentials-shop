@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useStore } from "@/context/StoreContext";
+import { getImageUrl } from "@/lib/getImageUrl";
 
 const SESSION_KEY = "medclub.intro.shown.v1";
 
@@ -43,8 +44,11 @@ export function IntroOverlay() {
         <div className="flex items-center gap-4">
           {site.logoUrl ? (
             <img
-              src={site.logoUrl}
+              src={getImageUrl(site.logoUrl, { w: 112 })}
               alt=""
+              width={56}
+              height={56}
+              decoding="async"
               className="h-12 w-12 rounded-lg object-cover md:h-14 md:w-14"
             />
           ) : (
@@ -60,8 +64,9 @@ export function IntroOverlay() {
           <span>powered by</span>
           {site.poweredByLogoUrl ? (
             <img
-              src={site.poweredByLogoUrl}
+              src={getImageUrl(site.poweredByLogoUrl, { w: 400, fit: "contain" })}
               alt="Powered by"
+              decoding="async"
               className="h-10 w-auto max-w-[200px] object-contain md:h-12"
             />
           ) : (
