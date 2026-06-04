@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, MapPin, Clock } from "lucide-react";
 import { useStore } from "@/context/StoreContext";
 
 export const Route = createFileRoute("/contact")({
@@ -21,24 +21,9 @@ const schema = z.object({
   message: z.string().trim().min(5, "Message is too short").max(1000),
 });
 
-const faqs = [
-  {
-    q: "Who can buy from the store?",
-    a: "Anyone is welcome, but club members get extra discounts on apparel and books.",
-  },
-  {
-    q: "How does pickup work?",
-    a: "Orders are ready the next weekday at the Student Union, Room 204. You'll get an email when yours is ready.",
-  },
-  {
-    q: "What's your return policy?",
-    a: "Unused items can be returned within 30 days for a full refund or store credit.",
-  },
-];
-
 function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", message: "" });
-  const { about } = useStore();
+  const { contact } = useStore();
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -52,29 +37,43 @@ function ContactPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-16">
-      <div className="grid gap-12 md:grid-cols-2">
+    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+      <div className="grid gap-10 md:grid-cols-2 md:gap-12">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Contact</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tight md:text-5xl">We're here to help.</h1>
-          <p className="mt-4 text-base text-muted-foreground">
-            Questions about a product, an order, or club membership? Send us a message.
-          </p>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl">{contact.heading}</h1>
+          <p className="mt-4 text-base text-muted-foreground">{contact.intro}</p>
           <ul className="mt-8 space-y-4 text-sm">
-            <li className="flex items-start gap-3">
-              <Mail className="mt-0.5 h-4 w-4 text-primary" />
-              <span>{about.email}</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <Phone className="mt-0.5 h-4 w-4 text-primary" />
-              <span>{about.phone}</span>
-            </li>
+            {contact.email && (
+              <li className="flex items-start gap-3">
+                <Mail className="mt-0.5 h-4 w-4 text-brand-red" />
+                <span className="break-all">{contact.email}</span>
+              </li>
+            )}
+            {contact.phone && (
+              <li className="flex items-start gap-3">
+                <Phone className="mt-0.5 h-4 w-4 text-brand-red" />
+                <span>{contact.phone}</span>
+              </li>
+            )}
+            {contact.address && (
+              <li className="flex items-start gap-3">
+                <MapPin className="mt-0.5 h-4 w-4 text-brand-red" />
+                <span>{contact.address}</span>
+              </li>
+            )}
+            {contact.hours && (
+              <li className="flex items-start gap-3">
+                <Clock className="mt-0.5 h-4 w-4 text-brand-red" />
+                <span>{contact.hours}</span>
+              </li>
+            )}
           </ul>
 
           <h2 id="faq" className="mt-12 text-sm font-semibold uppercase tracking-wider">FAQ</h2>
           <dl className="mt-4 space-y-5">
-            {faqs.map((f) => (
-              <div key={f.q}>
+            {contact.faqs.map((f, i) => (
+              <div key={i} className="border-l-2 border-brand-red/40 pl-4">
                 <dt className="text-sm font-medium text-foreground">{f.q}</dt>
                 <dd className="mt-1 text-sm text-muted-foreground">{f.a}</dd>
               </div>

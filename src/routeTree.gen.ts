@@ -24,6 +24,7 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AdminImagesRouteImport } from './routes/admin.images'
 import { Route as AdminHomepageRouteImport } from './routes/admin.homepage'
 import { Route as AdminFooterRouteImport } from './routes/admin.footer'
+import { Route as AdminContactRouteImport } from './routes/admin.contact'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminAboutRouteImport } from './routes/admin.about'
 
@@ -102,6 +103,11 @@ const AdminFooterRoute = AdminFooterRouteImport.update({
   path: '/admin/footer',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminContactRoute = AdminContactRouteImport.update({
+  id: '/admin/contact',
+  path: '/admin/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/admin/categories',
   path: '/admin/categories',
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof WishlistRoute
   '/admin/about': typeof AdminAboutRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/contact': typeof AdminContactRoute
   '/admin/footer': typeof AdminFooterRoute
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/images': typeof AdminImagesRoute
@@ -141,6 +148,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof WishlistRoute
   '/admin/about': typeof AdminAboutRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/contact': typeof AdminContactRoute
   '/admin/footer': typeof AdminFooterRoute
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/images': typeof AdminImagesRoute
@@ -161,6 +169,7 @@ export interface FileRoutesById {
   '/wishlist': typeof WishlistRoute
   '/admin/about': typeof AdminAboutRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/contact': typeof AdminContactRoute
   '/admin/footer': typeof AdminFooterRoute
   '/admin/homepage': typeof AdminHomepageRoute
   '/admin/images': typeof AdminImagesRoute
@@ -182,6 +191,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/about'
     | '/admin/categories'
+    | '/admin/contact'
     | '/admin/footer'
     | '/admin/homepage'
     | '/admin/images'
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/about'
     | '/admin/categories'
+    | '/admin/contact'
     | '/admin/footer'
     | '/admin/homepage'
     | '/admin/images'
@@ -220,6 +231,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/admin/about'
     | '/admin/categories'
+    | '/admin/contact'
     | '/admin/footer'
     | '/admin/homepage'
     | '/admin/images'
@@ -240,6 +252,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   AdminAboutRoute: typeof AdminAboutRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminContactRoute: typeof AdminContactRoute
   AdminFooterRoute: typeof AdminFooterRoute
   AdminHomepageRoute: typeof AdminHomepageRoute
   AdminImagesRoute: typeof AdminImagesRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminFooterRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/contact': {
+      id: '/admin/contact'
+      path: '/admin/contact'
+      fullPath: '/admin/contact'
+      preLoaderRoute: typeof AdminContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/admin/categories'
@@ -384,6 +404,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   AdminAboutRoute: AdminAboutRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminContactRoute: AdminContactRoute,
   AdminFooterRoute: AdminFooterRoute,
   AdminHomepageRoute: AdminHomepageRoute,
   AdminImagesRoute: AdminImagesRoute,
@@ -397,13 +418,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

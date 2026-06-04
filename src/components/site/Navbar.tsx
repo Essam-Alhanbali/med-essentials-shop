@@ -23,7 +23,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2 text-base font-semibold tracking-tight">
+        <Link to="/" className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight">
           {site.logoUrl ? (
             <img src={site.logoUrl} alt="MedClub Store" className="h-7 w-7 rounded-md object-cover" />
           ) : (
@@ -31,7 +31,7 @@ export function Navbar() {
               <span className="text-sm font-bold">+</span>
             </span>
           )}
-          <span>MedClub Store</span>
+          <span className="truncate">MedClub Store</span>
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -49,7 +49,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
           <Link
             to={user ? "/admin" : "/admin/login"}
             className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground sm:px-3"
@@ -60,19 +60,19 @@ export function Navbar() {
           </Link>
           <Link
             to="/wishlist"
-            className="relative hidden h-9 items-center gap-2 rounded-md px-3 text-sm text-foreground hover:bg-accent sm:inline-flex"
+            className="relative inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm text-foreground hover:bg-accent sm:px-3 sm:gap-2"
             aria-label="Wishlist"
           >
-            <Heart className={`h-4 w-4 ${wishCount > 0 ? "fill-primary text-primary" : ""}`} />
+            <Heart className={`h-4 w-4 ${wishCount > 0 ? "fill-brand-red text-brand-red" : ""}`} />
             {wishCount > 0 && (
-              <span className="ml-1 grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[11px] font-medium text-primary-foreground">
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-brand-red px-1.5 text-[11px] font-medium text-white">
                 {wishCount}
               </span>
             )}
           </Link>
           <Link
             to="/cart"
-            className="relative inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm text-foreground hover:bg-accent"
+            className="relative inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-sm text-foreground hover:bg-accent sm:px-3 sm:gap-2"
           >
             <ShoppingBag className="h-4 w-4" />
             <span className="hidden sm:inline">Cart</span>

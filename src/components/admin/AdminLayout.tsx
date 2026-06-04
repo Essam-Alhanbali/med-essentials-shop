@@ -10,6 +10,7 @@ import {
   Image as ImageIcon,
   PanelBottom,
   Handshake,
+  MessageSquare,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -29,6 +30,7 @@ const NAV: NavItem[] = [
   { to: "/admin/categories", label: "Categories", icon: FolderTree },
   { to: "/admin/homepage", label: "Homepage", icon: Home },
   { to: "/admin/about", label: "About Us", icon: Info },
+  { to: "/admin/contact", label: "Contact & FAQ", icon: MessageSquare },
   { to: "/admin/images", label: "Images", icon: ImageIcon },
   { to: "/admin/footer", label: "Footer", icon: PanelBottom },
   { to: "/admin/partners", label: "Partners", icon: Handshake },

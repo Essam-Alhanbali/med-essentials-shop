@@ -8,6 +8,7 @@ export interface StoreProduct extends Omit<Product, "category"> {
   category: string;
   subcategory?: string;
   imageUrl?: string;
+  features?: string[];
 }
 
 export interface CategoryDoc {
@@ -71,6 +72,21 @@ export interface FooterContent {
   shopCategoryIds: string[];
 }
 
+export interface FAQItem {
+  q: string;
+  a: string;
+}
+
+export interface ContactContent {
+  heading: string;
+  intro: string;
+  email: string;
+  phone: string;
+  address: string;
+  hours: string;
+  faqs: FAQItem[];
+}
+
 const DEFAULT_ABOUT: AboutContent = {
   heading: "Built by med students, for med students.",
   intro:
@@ -116,6 +132,20 @@ const DEFAULT_FOOTER: FooterContent = {
   shopCategoryIds: [],
 };
 
+const DEFAULT_CONTACT: ContactContent = {
+  heading: "We're here to help.",
+  intro: "Questions about a product, an order, or club membership? Send us a message.",
+  email: "store@medclub.edu",
+  phone: "+962 7 0000 0000",
+  address: "Student Union, Room 204",
+  hours: "Mon–Fri · 10:00–16:00",
+  faqs: [
+    { q: "Who can buy from the store?", a: "Anyone is welcome, but club members get extra discounts on apparel and books." },
+    { q: "How does pickup work?", a: "Orders are ready the next weekday at the Student Union, Room 204. You'll get an email when yours is ready." },
+    { q: "What's your return policy?", a: "Unused items can be returned within 30 days for a full refund or store credit." },
+  ],
+};
+
 interface StoreContextValue {
   products: StoreProduct[];
   categories: string[];
@@ -125,6 +155,7 @@ interface StoreContextValue {
   about: AboutContent;
   home: HomeContent;
   footer: FooterContent;
+  contact: ContactContent;
   site: SiteImages;
   partners: Partner[];
   loading: boolean;
@@ -139,6 +170,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [about, setAbout] = useState<AboutContent>(DEFAULT_ABOUT);
   const [home, setHome] = useState<HomeContent>(DEFAULT_HOME);
   const [footer, setFooter] = useState<FooterContent>(DEFAULT_FOOTER);
+  const [contact, setContact] = useState<ContactContent>(DEFAULT_CONTACT);
   const [site, setSite] = useState<SiteImages>(DEFAULT_SITE);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [loading, setLoading] = useState(true);
@@ -159,6 +191,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             description: data.description ?? "",
             badge: data.badge,
             imageUrl: data.imageUrl,
+            features: Array.isArray(data.features) ? data.features : undefined,
           };
         });
         setProducts(list);
@@ -206,6 +239,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       () => {}
     );
+    const unsubContact = onSnapshot(
+      doc(db, "content", "contact"),
+      (s) => {
+        if (s.exists()) setContact({ ...DEFAULT_CONTACT, ...(s.data() as Partial<ContactContent>) });
+      },
+      () => {}
+    );
     const unsubSite = onSnapshot(
       doc(db, "content", "site"),
       (s) => {
@@ -237,6 +277,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       unsubAbout();
       unsubHome();
       unsubFooter();
+      unsubContact();
       unsubSite();
       unsubPartners();
     };
@@ -261,11 +302,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       about,
       home,
       footer,
+      contact,
       site,
       partners,
       loading,
     };
-  }, [products, categoryDocs, hasCategoryDocs, about, home, footer, site, partners, loading]);
+  }, [products, categoryDocs, hasCategoryDocs, about, home, footer, contact, site, partners, loading]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
