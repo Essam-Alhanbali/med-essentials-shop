@@ -23,6 +23,7 @@ type ProductForm = {
   description: string;
   badge: string;
   imageUrl: string;
+  features: string[];
 };
 
 const empty = (firstCat: string): ProductForm => ({
@@ -34,6 +35,7 @@ const empty = (firstCat: string): ProductForm => ({
   description: "",
   badge: "",
   imageUrl: "",
+  features: [],
 });
 
 function ProductsAdminPage() {
@@ -62,6 +64,7 @@ function ProductsAdminPage() {
         description: form.description.trim(),
         badge: form.badge.trim() || null,
         imageUrl: form.imageUrl.trim() || null,
+        features: form.features.map((f) => f.trim()).filter(Boolean),
       });
       setForm(empty(categoryDocs[0]?.name ?? ""));
       toast.success("Product added");
@@ -93,6 +96,7 @@ function ProductsAdminPage() {
       description: p.description ?? "",
       badge: p.badge ?? "",
       imageUrl: p.imageUrl ?? "",
+      features: p.features ?? [],
     });
   }
 
@@ -108,6 +112,7 @@ function ProductsAdminPage() {
         description: editForm.description.trim(),
         badge: editForm.badge.trim() || null,
         imageUrl: editForm.imageUrl.trim() || null,
+        features: editForm.features.map((f) => f.trim()).filter(Boolean),
       });
       setEditingId(null);
       setEditForm(null);
@@ -185,6 +190,13 @@ function ProductsAdminPage() {
             rows={3}
             className="rounded-md border border-border bg-background px-3 py-2 text-sm sm:col-span-2"
           />
+          <div className="sm:col-span-2">
+            <FeaturesEditor
+              features={form.features}
+              onChange={(features) => setForm({ ...form, features })}
+              label="Checked features (shown under product with ✓)"
+            />
+          </div>
         </div>
         <button
           onClick={create}
@@ -220,6 +232,13 @@ function ProductsAdminPage() {
                 </div>
                 <input value={editForm.blurb} onChange={(e) => setEditForm({ ...editForm, blurb: e.target.value })} className="h-10 rounded-md border border-border bg-background px-3 text-sm sm:col-span-2" placeholder="Blurb" />
                 <textarea value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })} rows={3} className="rounded-md border border-border bg-background px-3 py-2 text-sm sm:col-span-2" placeholder="Description" />
+                <div className="sm:col-span-2">
+                  <FeaturesEditor
+                    features={editForm.features}
+                    onChange={(features) => setEditForm({ ...editForm, features })}
+                    label="Checked features"
+                  />
+                </div>
                 <div className="flex gap-2 sm:col-span-2">
                   <button onClick={saveEdit} className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90">
                     <Check className="h-4 w-4" /> Save
