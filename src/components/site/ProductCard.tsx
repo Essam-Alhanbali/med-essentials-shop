@@ -26,12 +26,12 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
       <Link
         to="/product/$id"
         params={{ id: product.id }}
-        className={`relative flex aspect-[4/3] items-center justify-center bg-gradient-to-br ${
+        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-gradient-to-br p-3 sm:p-4 ${
           accentByCategory[product.category] ?? "from-slate-50 to-white"
         }`}
       >
         {product.badge && (
-          <span className="absolute left-3 top-3 rounded-full bg-primary px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-primary-foreground">
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-brand-red px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
             {product.badge}
           </span>
         )}
@@ -42,14 +42,14 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             toast.success(wished ? "Removed from wishlist" : "Added to wishlist");
           }}
           aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-background/90 text-foreground shadow-sm backdrop-blur transition-colors hover:text-primary"
+          className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full bg-background/90 text-foreground shadow-sm backdrop-blur transition-colors hover:text-brand-red"
         >
-          <Heart className={`h-4 w-4 ${wished ? "fill-primary text-primary" : ""}`} />
+          <Heart className={`h-4 w-4 ${wished ? "fill-brand-red text-brand-red" : ""}`} />
         </button>
         {product.imageUrl ? (
           <img
-            src={getImageUrl(product.imageUrl, { w: 480 })}
-            srcSet={getImageSrcSet(product.imageUrl, [320, 480, 640])}
+            src={getImageUrl(product.imageUrl, { w: 480, fit: "inside" })}
+            srcSet={getImageSrcSet(product.imageUrl, [320, 480, 640], { fit: "inside" })}
             sizes="(min-width: 1024px) 320px, (min-width: 640px) 50vw, 100vw"
             alt={product.name}
             width={640}
@@ -57,7 +57,7 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
             loading={priority ? "eager" : "lazy"}
             fetchPriority={priority ? "high" : "auto"}
             decoding="async"
-            className="h-full w-full object-cover"
+            className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.04]"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).style.display = "none";
             }}
