@@ -3,10 +3,12 @@ export interface OrderItem {
   name: string;
   price: number;
   quantity: number;
+  size?: string;
 }
 
 export interface OrderDoc {
   id: string;
+  orderNumber?: string;
   fullName: string;
   email: string;
   phone: string;
