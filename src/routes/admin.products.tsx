@@ -211,6 +211,12 @@ function ProductsAdminPage() {
               label="Checked features (shown under product with ✓)"
             />
           </div>
+          <div className="sm:col-span-2">
+            <SizesEditor sizes={form.sizes} onChange={(sizes) => setForm({ ...form, sizes })} />
+          </div>
+          <div className="sm:col-span-2">
+            <YearsEditor years={form.years} onChange={(years) => setForm({ ...form, years })} />
+          </div>
         </div>
         <button
           onClick={create}
@@ -252,6 +258,12 @@ function ProductsAdminPage() {
                     onChange={(features) => setEditForm({ ...editForm, features })}
                     label="Checked features"
                   />
+                </div>
+                <div className="sm:col-span-2">
+                  <SizesEditor sizes={editForm.sizes} onChange={(sizes) => setEditForm({ ...editForm, sizes })} />
+                </div>
+                <div className="sm:col-span-2">
+                  <YearsEditor years={editForm.years} onChange={(years) => setEditForm({ ...editForm, years })} />
                 </div>
                 <div className="flex gap-2 sm:col-span-2">
                   <button onClick={saveEdit} className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90">
@@ -337,6 +349,93 @@ function FeaturesEditor({
         >
           <Plus className="h-3.5 w-3.5" /> Add check
         </button>
+      </div>
+    </div>
+  );
+}
+
+function SizesEditor({ sizes, onChange }: { sizes: ProductSize[]; onChange: (next: ProductSize[]) => void }) {
+  const update = (i: number, patch: Partial<ProductSize>) =>
+    onChange(sizes.map((s, idx) => (idx === i ? { ...s, ...patch } : s)));
+  const remove = (i: number) => onChange(sizes.filter((_, idx) => idx !== i));
+  const add = () => onChange([...sizes, { label: "", stock: 0, priceDelta: 0 }]);
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Sizes / variants (leave empty if product has no sizes)
+      </div>
+      <div className="mt-2 space-y-2">
+        {sizes.map((s, i) => (
+          <div key={i} className="grid grid-cols-[1fr_80px_100px_36px] gap-2">
+            <input
+              value={s.label}
+              onChange={(e) => update(i, { label: e.target.value })}
+              placeholder="Label (S, M, XXL, 42cm)"
+              className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+            />
+            <input
+              type="number"
+              value={s.stock}
+              onChange={(e) => update(i, { stock: Number(e.target.value) })}
+              placeholder="Stock"
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+            />
+            <input
+              type="number"
+              step="0.001"
+              value={s.priceDelta ?? 0}
+              onChange={(e) => update(i, { priceDelta: Number(e.target.value) })}
+              placeholder="+JOD"
+              className="h-9 rounded-md border border-border bg-background px-2 text-sm"
+            />
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="grid h-9 w-9 place-items-center rounded-md border border-border text-destructive hover:bg-accent"
+              aria-label="Remove"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={add}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-accent"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add size
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function YearsEditor({ years, onChange }: { years: string[]; onChange: (next: string[]) => void }) {
+  const toggle = (y: string) =>
+    onChange(years.includes(y) ? years.filter((x) => x !== y) : [...years, y]);
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Recommended for year(s)
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        {(["Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6", "All Years"] as const).map((y) => {
+          const active = years.includes(y);
+          return (
+            <button
+              key={y}
+              type="button"
+              onClick={() => toggle(y)}
+              className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                active
+                  ? "border-brand-red bg-brand-red text-white"
+                  : "border-border bg-card hover:bg-accent"
+              }`}
+            >
+              {y}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
