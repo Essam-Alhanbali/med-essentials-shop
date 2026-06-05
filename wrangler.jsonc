@@ -3,5 +3,19 @@
   "name": "med-essentials-shop",
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
-  "main": "src/server.ts",
+  // Deploy flow:
+  //   1. `npx vite build` — Nitro (cloudflare-module preset) emits the
+  //      bundled Worker to `dist/server/index.mjs` with assets in
+  //      `dist/client/`, and writes its own `dist/server/wrangler.json`
+  //      plus `.wrangler/deploy/config.json`.
+  //   2. `npx wrangler deploy` — wrangler auto-discovers
+  //      `.wrangler/deploy/config.json` and uses the generated config,
+  //      so this root file's `main` / `assets` would be ignored anyway
+  //      (Nitro prints a warning if set). The Worker is published as
+  //      `med-essentials-shop` (name below matches the generated config).
+  "main": "dist/server/index.mjs",
+  "assets": {
+    "directory": "dist/client",
+    "binding": "ASSETS"
+  },
 }
