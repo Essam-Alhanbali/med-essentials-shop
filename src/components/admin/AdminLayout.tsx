@@ -1,5 +1,7 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -11,6 +13,7 @@ import {
   PanelBottom,
   Handshake,
   MessageSquare,
+  Star,
   LogOut,
   Menu,
 } from "lucide-react";
@@ -27,6 +30,7 @@ const NAV: NavItem[] = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { to: "/admin/products", label: "Products", icon: Package },
+  { to: "/admin/reviews", label: "Reviews", icon: Star },
   { to: "/admin/categories", label: "Categories", icon: FolderTree },
   { to: "/admin/homepage", label: "Homepage", icon: Home },
   { to: "/admin/about", label: "About Us", icon: Info },
@@ -48,10 +52,17 @@ export function AdminLayout({
   const { user, loading, signOutUser } = useAuth();
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [pendingReviews, setPendingReviews] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/admin/login" });
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+    const q = query(collection(db, "reviews"), where("approved", "==", false));
+    return onSnapshot(q, (snap) => setPendingReviews(snap.size), () => {});
+  }, [user]);
 
   if (loading || !user) {
     return (
@@ -75,6 +86,7 @@ export function AdminLayout({
               const active = item.exact
                 ? pathname === item.to
                 : pathname === item.to || pathname.startsWith(item.to + "/");
+              const badge = item.to === "/admin/reviews" && pendingReviews > 0 ? pendingReviews : null;
               return (
                 <Link
                   key={item.to}
@@ -86,7 +98,12 @@ export function AdminLayout({
                   }`}
                 >
                   <Icon className="h-4 w-4" />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {badge !== null && (
+                    <span className="ml-auto rounded-full bg-brand-red px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      {badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -112,6 +129,7 @@ export function AdminLayout({
           <nav className="flex flex-col gap-0.5 border-t border-border p-2">
             {NAV.map((item) => {
               const Icon = item.icon;
+              const badge = item.to === "/admin/reviews" && pendingReviews > 0 ? pendingReviews : null;
               return (
                 <Link
                   key={item.to}
@@ -119,7 +137,12 @@ export function AdminLayout({
                   className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   <Icon className="h-4 w-4" />
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {badge !== null && (
+                    <span className="ml-auto rounded-full bg-brand-red px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                      {badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

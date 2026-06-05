@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { useStore } from "@/context/StoreContext";
@@ -18,6 +19,22 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { products, categoryDocs, home, site, getCategoryEmoji } = useStore();
+  const [studentYear, setStudentYear] = useState<string | null>(null);
+  const [showYearPrompt, setShowYearPrompt] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sy = localStorage.getItem("medclub.studentYear");
+    if (sy) setStudentYear(sy);
+    else setShowYearPrompt(true);
+  }, []);
+
+  function pickYear(y: string) {
+    localStorage.setItem("medclub.studentYear", y);
+    setStudentYear(y);
+    setShowYearPrompt(false);
+  }
+
   const featuredIds = home.featuredProductIds ?? [];
   const featured = featuredIds.length
     ? featuredIds
@@ -84,6 +101,47 @@ function Index() {
           </div>
         </div>
       </section>
+
+      {/* Year prompt */}
+      {showYearPrompt && (
+        <section className="border-y border-brand-red/20 bg-brand-red/5">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-5">
+            <div>
+              <div className="text-sm font-semibold">Shopping for which year?</div>
+              <div className="text-xs text-muted-foreground">
+                We'll pre-filter the shop to items recommended for you.
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {["Year 1", "Year 2", "Year 3", "Year 4", "Year 5", "Year 6"].map((y) => (
+                <button
+                  key={y}
+                  onClick={() => pickYear(y)}
+                  className="rounded-full border border-brand-red/30 bg-background px-3 py-1 text-xs font-medium hover:bg-brand-red hover:text-white"
+                >
+                  {y}
+                </button>
+              ))}
+              <button
+                onClick={() => setShowYearPrompt(false)}
+                className="rounded-full px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Not now
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+      {studentYear && (
+        <section className="border-y border-border bg-secondary/40">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 text-xs">
+            <span>Recommendations tuned for <strong>{studentYear}</strong>.</span>
+            <Link to="/shop" search={{ year: studentYear }} className="font-medium text-brand-red hover:underline">
+              Browse your shop →
+            </Link>
+          </div>
+        </section>
+      )}
 
       {/* Value props */}
       <section className="border-y border-border/60 bg-secondary/40">

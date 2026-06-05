@@ -4,17 +4,18 @@ import { useStore, type StoreProduct } from "@/context/StoreContext";
 interface CartItem {
   productId: string;
   quantity: number;
+  size?: string;
 }
 
 interface CartContextValue {
   items: CartItem[];
-  add: (productId: string, qty?: number) => void;
-  remove: (productId: string) => void;
-  setQty: (productId: string, qty: number) => void;
+  add: (productId: string, qty?: number, size?: string) => void;
+  remove: (productId: string, size?: string) => void;
+  setQty: (productId: string, qty: number, size?: string) => void;
   clear: () => void;
   totalItems: number;
   subtotal: number;
-  detailed: { product: StoreProduct; quantity: number }[];
+  detailed: { product: StoreProduct; quantity: number; size?: string; unitPrice: number }[];
 }
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -41,33 +42,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const detailed = items
       .map((i) => {
         const product = products.find((p) => p.id === i.productId);
-        return product ? { product, quantity: i.quantity } : null;
+        if (!product) return null;
+        const sizeInfo = i.size ? product.sizes?.find((s) => s.label === i.size) : undefined;
+        const unitPrice = product.price + (sizeInfo?.priceDelta ?? 0);
+        return { product, quantity: i.quantity, size: i.size, unitPrice };
       })
-      .filter(Boolean) as { product: StoreProduct; quantity: number }[];
+      .filter(Boolean) as { product: StoreProduct; quantity: number; size?: string; unitPrice: number }[];
+
+    const sameKey = (a: CartItem, productId: string, size?: string) =>
+      a.productId === productId && (a.size ?? "") === (size ?? "");
 
     return {
       items,
-      add: (productId, qty = 1) =>
+      add: (productId, qty = 1, size) =>
         setItems((prev) => {
-          const existing = prev.find((i) => i.productId === productId);
+          const existing = prev.find((i) => sameKey(i, productId, size));
           if (existing) {
             return prev.map((i) =>
-              i.productId === productId ? { ...i, quantity: i.quantity + qty } : i,
+              sameKey(i, productId, size) ? { ...i, quantity: i.quantity + qty } : i,
             );
           }
-          return [...prev, { productId, quantity: qty }];
+          return [...prev, { productId, quantity: qty, size }];
         }),
-      remove: (productId) =>
-        setItems((prev) => prev.filter((i) => i.productId !== productId)),
-      setQty: (productId, qty) =>
+      remove: (productId, size) =>
+        setItems((prev) => prev.filter((i) => !sameKey(i, productId, size))),
+      setQty: (productId, qty, size) =>
         setItems((prev) =>
           qty <= 0
-            ? prev.filter((i) => i.productId !== productId)
-            : prev.map((i) => (i.productId === productId ? { ...i, quantity: qty } : i)),
+            ? prev.filter((i) => !sameKey(i, productId, size))
+            : prev.map((i) => (sameKey(i, productId, size) ? { ...i, quantity: qty } : i)),
         ),
       clear: () => setItems([]),
       totalItems: items.reduce((s, i) => s + i.quantity, 0),
-      subtotal: detailed.reduce((s, d) => s + d.product.price * d.quantity, 0),
+      subtotal: detailed.reduce((s, d) => s + d.unitPrice * d.quantity, 0),
       detailed,
     };
   }, [items, products]);

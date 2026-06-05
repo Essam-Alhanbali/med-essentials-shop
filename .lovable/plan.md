@@ -1,105 +1,98 @@
-# Admin Panel Restructure + Frontend Overhaul
+## Overview
 
-A large change. Splitting into clear groups so we can track progress.
+Five new features added across storefront + admin. All data lives in Firestore (consistent with current architecture). The TanStack Router route-tree auto-regenerates from new files in `src/routes/`.
 
-## 1. Admin layout (sidebar shell)
+---
 
-- Convert `src/routes/admin.index.tsx` into a layout route `src/routes/admin.tsx` that renders a persistent sidebar + `<Outlet/>`, gated by auth (redirect to `/admin/login`).
-- Move existing admin content out of `admin.index.tsx`; new `admin.index.tsx` becomes the **Dashboard** page.
-- New admin sub-routes (flat dot notation):
-  - `admin.index.tsx` — Dashboard
-  - `admin.orders.tsx` — Orders
-  - `admin.products.tsx` — Products
-  - `admin.categories.tsx` — Categories
-  - `admin.homepage.tsx` — Homepage editor
-  - `admin.about.tsx` — About editor
-  - `admin.images.tsx` — Site images (logo + hero)
-  - `admin.footer.tsx` — Footer editor
-  - `admin.partners.tsx` — Partners
-- Sidebar uses `Sidebar` shadcn component with `collapsible="icon"`, active route highlighting.
+### 1. Size Selector (Apparel)
 
-## 2. Firestore data model additions
+**Schema (per product)**
+```ts
+sizes?: { label: string; stock: number; priceDelta?: number }[]
+```
 
-- `categories/{id}` gains `emoji`, `imageUrl`, `subcategories[]` (already exists).
-- `content/home` doc: `{ heroHeadline, heroSubheadline, heroImageUrl, stats: [{label, value}] }`.
-- `content/about` doc: extend with `phone`, `stats: [{label,value}]`, `imageUrl`; remove address/hours from frontend display.
-- `content/footer` doc: extend with `shopCategoryIds: string[]`.
-- `content/site` doc: `{ logoUrl, heroImageUrl }` (global images).
-- `partners/{id}`: `{ name, logoUrl, websiteUrl }`.
-- `orders/{id}`: `{ fullName, email, phone, academicYear, address, notes, items:[{productId,name,price,quantity}], total, status, createdAt }`.
+**Admin** (`admin.products.tsx`): new `SizesEditor` component (rows of label / stock / priceDelta) added to create + edit forms.
 
-## 3. Dashboard page
+**Product page** (`product.$id.tsx`):
+- If `sizes?.length`, render pill buttons (not dropdown). Zero-stock = greyed + strikethrough + disabled. Selected = filled red accent.
+- "Add to cart" disabled until size selected; hint "Select a size".
+- Price reflects `base + priceDelta`.
 
-- 3 stat cards: total orders count, pending count, completed revenue sum (JOD).
-- Recent 5 orders preview table, link to `/admin/orders`.
+**Cart**:
+- `CartContext` items keyed by `productId + size`. Item shape: `{ productId, size?, quantity }`. `add(productId, qty, size?)`, `setQty/remove` accept `(productId, size?)`. `detailed` includes effective unit price and chosen size; displayed in cart row.
 
-## 4. Orders page
+### 2. Product Comparison
 
-- onSnapshot `orders` ordered by `createdAt` desc.
-- Row expandable to show items + notes + full contact.
-- Status `<Select>` with 6 options, color-coded badges (yellow/blue/purple/orange/green/red).
-- updateDoc on status change.
+- New `CompareContext` (localStorage, up to 3 ids). `useCompare()` exposes `ids, toggle, remove, clear`.
+- `ProductCard`: add Compare checkbox (top-left under badge area).
+- Sticky bottom bar component `CompareBar` shown when ≥1 selected; "Compare Now" links to `/compare`.
+- New route `src/routes/compare.tsx`: horizontally-scrollable table with image / name+category / price / rating / stock / Add-to-Cart per column. Per-column remove button. Empty-state CTA back to /shop.
 
-## 5. Products page
+### 3. Reviews & Ratings
 
-- Existing product CRUD lifted out, kept as-is plus the subcategory dropdown driven by selected category's `subcategories`.
-- Image: URL text input OR upload button (uses `uploadImageFile`). Last-saved wins.
+**Firestore**: `reviews` collection — `{ productId, rating(1-5), comment, name, approved: boolean, createdAt }`.
 
-## 6. Categories page
+**Product page**: "Student Reviews" section — avg stars + count, list of approved reviews (newest first, paginate 5/page "Load more"), review form (star picker, comment ≥20 chars, name). Submits with `approved: false`.
 
-- Full CRUD. Emoji grid picker from fixed set (defaults 📦).
-- Image URL + upload.
-- Subcategories add/remove chips.
-- No locking — seed fallback in StoreContext stays for storefront, but admin lists Firestore docs and can seed defaults on first visit.
+**Admin**: new route `admin.reviews.tsx` — table of all reviews with Approve / Delete. Pending count badge on the Reviews nav item in `AdminLayout`.
 
-## 7. Homepage editor
+Names shown as "FirstName L." (last-initial truncation).
 
-- Hero headline/subheadline/image (URL + upload).
-- Stats list editor (add/edit/delete/reorder via up/down buttons).
-- Frontend `routes/index.tsx` reads from `content/home`.
+### 4. "Recommended for Your Year" Filter
 
-## 8. About editor + frontend cleanup
+**Product schema**: `years?: string[]` ("Year 1"…"Year 6", "All Years").
 
-- Fields: heading, intro, body, email, phone, image, stats list.
-- Frontend `routes/about.tsx`: remove address & hours blocks, show email + phone (Phone icon from lucide), render stats and partners.
+**Admin** (`admin.products.tsx`): multi-select pill toggles for years on create + edit.
 
-## 9. Images page
+**Shop** (`shop.tsx`):
+- Year pill filter in sidebar (All, Year 1–6). Combines AND with category. Synced into `validateSearch` (`year`).
+- Reads localStorage key `medclub.studentYear` on mount; if set, pre-applies year filter and shows "Showing for Year 3 · Change" chip at top (Change clears stored year).
 
-- `content/site` doc with `logoUrl` and `heroImageUrl`; each has URL input + upload.
-- Navbar/Footer logo reads `logoUrl`, falls back to `+` icon.
-- Homepage hero uses `heroImageUrl` if set.
+**Homepage** (`index.tsx`): "Shopping for Year __?" prompt card → year pills → saves to localStorage, links to `/shop?year=...`. Hidden once set.
 
-## 10. Footer editor + frontend
+### 5. Order Tracker
 
-- Tagline, email, address, copyright (`{year}` placeholder), bottomRight, `shopCategoryIds[]` checkbox list.
-- Footer renders selected categories (max 5) as Shop column links; fallback all categories.
-- Copyright replaces `{year}` with current year.
+**Schema**: orders already have `status` + `id`. Add an `orderNumber` field on create: `MC-` + sequential 4-digit (computed client-side from random 1000-9999; collisions acceptable for now) stored on the doc.
 
-## 11. Partners page + frontend sections
+**Checkout**: after successful order, show inline confirmation panel (not just toast) with order number and link to `/track?order=MC-XXXX`. (Replaces the previous toast-only flow inside `CheckoutDialog`.)
 
-- CRUD list (name, logoUrl, websiteUrl).
-- Homepage: "Sponsored By" section above footer.
-- About: "Partners" section at bottom.
+**New route `/track`** (`src/routes/track.tsx`):
+- Input + lookup (queries `orders` where `orderNumber == input`).
+- Stepper: Order Placed → Being Prepared → Ready for Pickup → Collected. Map existing statuses: Pending/Confirmed → Placed; "Ready for Pickup" → Ready; Completed → Collected; etc.
+- Order summary: items, total, pickup location "Student Union, Room 204", est. ready date (if `readyDate` field set).
 
-## 12. Frontend changes
+**Admin orders** (`admin.orders.tsx`):
+- Replace status dropdown options with the 4 canonical stages (keep Pending + Cancelled as existing). Actually: extend `ORDER_STATUSES` with the 4-stage set already largely present (`Pending`, `Confirmed`, `Ready for Pickup`, `Completed`).
+- Status filter pills at top.
+- When status becomes "Ready for Pickup" → placeholder notice "WhatsApp/email notification (coming soon)".
+- Show `orderNumber` column.
 
-- **Seed products removed**: empty `products: []` in `src/data/products.ts`; `StoreContext` keeps only Firestore products.
-- **Currency**: update `formatPrice` to `JOD X.XXX` (3 decimals).
-- **Checkout**: convert `/cart` flow — add `routes/checkout.tsx` form (name/email/phone/year/address/notes + order summary + Place Order). On submit, addDoc to `orders`, clear cart, redirect to `/order/$id`.
-- **Order confirmation**: `routes/order.$id.tsx` reads the order from Firestore and shows summary.
-- **Category icons**: `CategoryDoc` gains `emoji`; ProductCard badge area + shop filter bar + homepage grid all show emoji (fallback 📦).
+---
 
-## Technical notes
+### Files to create
+- `src/context/CompareContext.tsx`
+- `src/components/site/CompareBar.tsx`
+- `src/routes/compare.tsx`
+- `src/routes/track.tsx`
+- `src/routes/admin.reviews.tsx`
 
-- All admin pages share a tiny gate that listens to `onAuthStateChanged` and redirects if logged out.
-- Re-use `uploadImageFile` helper for all uploads.
-- Recharts not needed; stat cards are plain components.
-- Order status badge variants implemented as a small `getStatusStyles(status)` helper returning Tailwind classes against design tokens (no raw hex).
-- No migrations needed (Firestore).
-- Firestore security rules already permit authenticated writes — no rule changes required.
+### Files to edit
+- `src/context/CartContext.tsx` — size-aware items
+- `src/context/StoreContext.tsx` — load `sizes`, `years` on products
+- `src/routes/__root.tsx` — mount `CompareProvider` + `<CompareBar/>`
+- `src/routes/admin.products.tsx` — sizes editor + year multi-select
+- `src/routes/product.$id.tsx` — size selector + reviews section
+- `src/routes/shop.tsx` — year filter sidebar, year search param, persisted year banner
+- `src/routes/index.tsx` — "Shopping for Year __?" prompt
+- `src/routes/cart.tsx` — show chosen size; pass size through; include orderNumber in created order; show confirmation
+- `src/routes/admin.orders.tsx` — orderNumber column, status filter, ready-for-pickup notice
+- `src/components/admin/AdminLayout.tsx` — add Reviews nav with pending badge
+- `src/components/site/ProductCard.tsx` — Compare checkbox
 
-## Out of scope / explicit non-goals
+No DB migrations required (Firestore is schemaless).
 
-- No payment integration; Place Order just records the order.
-- No email/SMS notifications.
-- No role system beyond "signed-in admin".
+### Notes / Limits
+- Sizes are independent of category; admin can use them for any product but they only render when defined (apparel is convention, not enforcement).
+- Reviews moderation: hidden until `approved=true`.
+- Comparison limited to 3 products.
+- Order number uniqueness is best-effort (not enforced server-side).

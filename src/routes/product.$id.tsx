@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Minus, Plus, ArrowLeft, Check, ZoomIn, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Minus, Plus, ArrowLeft, Check, ZoomIn, X, Star } from "lucide-react";
+import { addDoc, collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useStore } from "@/context/StoreContext";
 import { useCart } from "@/context/CartContext";
 import { toast } from "sonner";
@@ -27,6 +29,7 @@ function ProductPage() {
   const { add } = useCart();
   const [qty, setQty] = useState(1);
   const [zoomOpen, setZoomOpen] = useState(false);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
 
   if (!product) {
     return (
@@ -38,6 +41,12 @@ function ProductPage() {
       </div>
     );
   }
+
+  const hasSizes = !!product.sizes && product.sizes.length > 0;
+  const sizeInfo = hasSizes && selectedSize
+    ? product.sizes!.find((s) => s.label === selectedSize)
+    : null;
+  const effectivePrice = product.price + (sizeInfo?.priceDelta ?? 0);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
@@ -81,7 +90,7 @@ function ProductPage() {
             {product.category}
           </div>
           <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">{product.name}</h1>
-          <div className="mt-4 text-2xl font-semibold text-foreground">{formatPrice(product.price)}</div>
+          <div className="mt-4 text-2xl font-semibold text-foreground">{formatPrice(effectivePrice)}</div>
           <p className="mt-6 text-base text-muted-foreground">{product.description}</p>
 
           {product.features && product.features.length > 0 && (
@@ -93,6 +102,46 @@ function ProductPage() {
                 </li>
               ))}
             </ul>
+          )}
+
+          {hasSizes && (
+            <div className="mt-6">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Size {selectedSize ? `· ${selectedSize}` : ""}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {product.sizes!.map((s) => {
+                  const oos = (s.stock ?? 0) <= 0;
+                  const active = selectedSize === s.label;
+                  return (
+                    <button
+                      key={s.label}
+                      type="button"
+                      disabled={oos}
+                      onClick={() => setSelectedSize(s.label)}
+                      className={`min-w-[3rem] rounded-md border px-3 py-2 text-sm font-medium transition-colors ${
+                        active
+                          ? "border-brand-red bg-brand-red text-white"
+                          : oos
+                          ? "border-border bg-muted text-muted-foreground line-through cursor-not-allowed opacity-60"
+                          : "border-border bg-background hover:border-brand-red"
+                      }`}
+                    >
+                      {s.label}
+                      {s.priceDelta ? (
+                        <span className="ml-1 text-[10px] opacity-80">
+                          {s.priceDelta > 0 ? "+" : ""}
+                          {s.priceDelta}
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+              {!selectedSize && (
+                <p className="mt-2 text-xs text-muted-foreground">Select a size to continue.</p>
+              )}
+            </div>
           )}
 
           <div className="mt-8 flex items-center gap-3">
@@ -114,17 +163,20 @@ function ProductPage() {
               </button>
             </div>
             <button
+              disabled={hasSizes && !selectedSize}
               onClick={() => {
-                add(product.id, qty);
+                add(product.id, qty, selectedSize ?? undefined);
                 toast.success(`${qty} × ${product.name} added to cart`);
               }}
-              className="inline-flex h-11 flex-1 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex h-11 flex-1 items-center justify-center rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add to cart
+              {hasSizes && !selectedSize ? "Select a size" : "Add to cart"}
             </button>
           </div>
         </div>
       </div>
+
+      <ReviewsSection productId={product.id} />
 
       {zoomOpen && product.imageUrl && (
         <div
@@ -149,5 +201,163 @@ function ProductPage() {
         </div>
       )}
     </div>
+  );
+}
+
+interface Review {
+  id: string;
+  productId: string;
+  rating: number;
+  comment: string;
+  name: string;
+  approved: boolean;
+  createdAt: number;
+}
+
+function maskName(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1][0].toUpperCase()}.`;
+}
+
+function ReviewsSection({ productId }: { productId: string }) {
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [showCount, setShowCount] = useState(5);
+  const [form, setForm] = useState({ rating: 0, comment: "", name: "" });
+  const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, "reviews"),
+      where("productId", "==", productId),
+      where("approved", "==", true),
+    );
+    return onSnapshot(q, (snap) => {
+      const list = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Review, "id">) }));
+      list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      setReviews(list);
+    });
+  }, [productId]);
+
+  const avg = useMemo(
+    () => (reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : 0),
+    [reviews],
+  );
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (form.rating < 1) return setError("Please select a star rating.");
+    if (form.comment.trim().length < 20) return setError("Comment must be at least 20 characters.");
+    if (form.name.trim().length < 2) return setError("Please enter your name.");
+    setSubmitting(true);
+    setError("");
+    try {
+      await addDoc(collection(db, "reviews"), {
+        productId,
+        rating: form.rating,
+        comment: form.comment.trim(),
+        name: form.name.trim(),
+        approved: false,
+        createdAt: Date.now(),
+      });
+      setForm({ rating: 0, comment: "", name: "" });
+      toast.success("Thanks! Your review is pending approval.");
+    } catch (err: any) {
+      setError(err?.message ?? "Failed to submit");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <section className="mt-14 border-t border-border pt-10">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <h2 className="text-xl font-semibold">Student Reviews</h2>
+        {reviews.length > 0 && (
+          <div className="text-sm text-muted-foreground">
+            <span className="text-amber-500">{"★".repeat(Math.round(avg))}</span>
+            <span className="text-muted">{"★".repeat(5 - Math.round(avg))}</span>{" "}
+            {avg.toFixed(1)} · {reviews.length} review{reviews.length === 1 ? "" : "s"}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_360px]">
+        <div className="space-y-4">
+          {reviews.length === 0 && (
+            <p className="text-sm text-muted-foreground">No reviews yet. Be the first!</p>
+          )}
+          {reviews.slice(0, showCount).map((r) => (
+            <div key={r.id} className="rounded-lg border border-border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-amber-500">{"★".repeat(r.rating)}</span>
+                  <span className="text-muted-foreground">{"★".repeat(5 - r.rating)}</span>
+                  <span className="font-medium">{maskName(r.name)}</span>
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {new Date(r.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="mt-2 text-sm">{r.comment}</p>
+            </div>
+          ))}
+          {reviews.length > showCount && (
+            <button
+              onClick={() => setShowCount((c) => c + 5)}
+              className="inline-flex h-9 items-center rounded-md border border-border px-4 text-sm hover:bg-accent"
+            >
+              Load more
+            </button>
+          )}
+        </div>
+
+        <form onSubmit={submit} className="rounded-lg border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold">Write a Review</h3>
+          <div className="mt-3 flex gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setForm({ ...form, rating: n })}
+                className="p-0.5"
+                aria-label={`${n} star${n === 1 ? "" : "s"}`}
+              >
+                <Star
+                  className={`h-6 w-6 ${
+                    n <= form.rating ? "fill-amber-400 text-amber-400" : "text-muted-foreground"
+                  }`}
+                />
+              </button>
+            ))}
+          </div>
+          <textarea
+            value={form.comment}
+            onChange={(e) => setForm({ ...form, comment: e.target.value })}
+            placeholder="Share your experience (min 20 chars)…"
+            rows={4}
+            className="mt-3 w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+          />
+          <input
+            value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            placeholder="Your name (e.g. Ahmad Smith)"
+            className="mt-3 h-10 w-full rounded-md border border-border bg-background px-3 text-sm"
+          />
+          {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-3 inline-flex h-10 w-full items-center justify-center rounded-md bg-brand-red px-4 text-sm font-medium text-white hover:bg-brand-red/90 disabled:opacity-50"
+          >
+            {submitting ? "Submitting…" : "Submit review"}
+          </button>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Reviews appear after admin approval.
+          </p>
+        </form>
+      </div>
+    </section>
   );
 }

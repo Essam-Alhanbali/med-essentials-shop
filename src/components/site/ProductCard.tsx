@@ -3,6 +3,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { useStore, type StoreProduct } from "@/context/StoreContext";
 import { Heart } from "lucide-react";
+import { useCompare } from "@/context/CompareContext";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/price";
 import { getImageUrl, getImageSrcSet } from "@/lib/getImageUrl";
@@ -20,6 +21,8 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
   const { has, toggle } = useWishlist();
   const { getCategoryEmoji } = useStore();
   const wished = has(product.id);
+  const compare = useCompare();
+  const inCompare = compare.has(product.id);
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-all hover:border-primary/30 hover:shadow-[0_10px_30px_-15px_rgb(25_120_229/0.25)]">
@@ -78,6 +81,18 @@ export function ProductCard({ product, priority = false }: { product: StoreProdu
           </h3>
         </Link>
         <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{product.blurb}</p>
+        <label className="mt-2 inline-flex w-fit cursor-pointer items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+          <input
+            type="checkbox"
+            checked={inCompare}
+            onChange={() => {
+              const ok = compare.toggle(product.id);
+              if (!ok) toast.error("You can compare up to 3 products");
+            }}
+            className="h-3.5 w-3.5 accent-brand-red"
+          />
+          Compare
+        </label>
         <div className="mt-4 flex items-center justify-between">
           <span className="text-base font-semibold text-foreground">{formatPrice(product.price)}</span>
           <button

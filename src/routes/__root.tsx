@@ -13,6 +13,8 @@ import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { AuthProvider } from "@/context/AuthContext";
 import { StoreProvider } from "@/context/StoreContext";
+import { CompareProvider } from "@/context/CompareContext";
+import { CompareBar } from "@/components/site/CompareBar";
 import { Navbar } from "@/components/site/Navbar";
 import { Footer } from "@/components/site/Footer";
 import { IntroOverlay } from "@/components/site/IntroOverlay";
@@ -141,15 +143,18 @@ function RootComponent() {
         <StoreProvider>
           <CartProvider>
             <WishlistProvider>
-              <div className="flex min-h-screen flex-col">
-                <Navbar />
-                <main className="flex-1">
-                  <Outlet />
-                </main>
-                <Footer />
-              </div>
-              <IntroOverlay />
-              <Toaster />
+              <CompareProvider>
+                <div className="flex min-h-screen flex-col">
+                  <Navbar />
+                  <main className="flex-1">
+                    <Outlet />
+                  </main>
+                  <Footer />
+                </div>
+                <CompareBar />
+                <IntroOverlay />
+                <Toaster />
+              </CompareProvider>
             </WishlistProvider>
           </CartProvider>
         </StoreProvider>
