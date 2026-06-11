@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Minus, Plus, ArrowLeft, Check, ZoomIn, X, Star } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Minus, Plus, ArrowLeft, Check, ZoomIn, Star } from "lucide-react";
 import { addDoc, collection, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useStore } from "@/context/StoreContext";
@@ -28,8 +28,9 @@ function ProductPage() {
   const product = getProduct(id);
   const { add } = useCart();
   const [qty, setQty] = useState(1);
-  const [zoomOpen, setZoomOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [variantIdx, setVariantIdx] = useState(0);
+  const [imageIdx, setImageIdx] = useState(0);
 
   if (!product) {
     return (
@@ -46,7 +47,24 @@ function ProductPage() {
   const sizeInfo = hasSizes && selectedSize
     ? product.sizes!.find((s) => s.label === selectedSize)
     : null;
-  const effectivePrice = product.price + (sizeInfo?.priceDelta ?? 0);
+
+  const variants = product.variants ?? [];
+  const activeVariant = variants[variantIdx];
+  const basePrice = activeVariant?.price ?? product.price;
+  const effectivePrice = basePrice + (sizeInfo?.priceDelta ?? 0);
+  const displayName = activeVariant?.displayName || product.name;
+
+  const gallery = useMemo(() => {
+    if (activeVariant?.images && activeVariant.images.length) return activeVariant.images;
+    if (product.images && product.images.length) return product.images;
+    if (product.imageUrl) return [product.imageUrl];
+    return [];
+  }, [activeVariant, product.images, product.imageUrl]);
+
+  // reset image index when gallery changes
+  useEffect(() => { setImageIdx(0); }, [variantIdx, product.id]);
+
+  const activeImage = gallery[imageIdx] ?? gallery[0];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
@@ -57,39 +75,41 @@ function ProductPage() {
         <ArrowLeft className="h-4 w-4" /> Back to shop
       </Link>
       <div className="mt-6 grid gap-8 md:grid-cols-2 md:gap-12">
-        <button
-          type="button"
-          onClick={() => product.imageUrl && setZoomOpen(true)}
-          className="group relative flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary to-background p-4 sm:p-6"
-          aria-label="Zoom image"
-        >
-          {product.imageUrl ? (
-            <>
-              <img
-                src={getImageUrl(product.imageUrl, { w: 960, fit: "inside" })}
-                srcSet={getImageSrcSet(product.imageUrl, [640, 960, 1200], { fit: "inside" })}
-                sizes="(min-width: 768px) 50vw, 100vw"
-                alt={product.name}
-                width={1200}
-                height={1200}
-                loading="eager"
-                fetchPriority="high"
-                decoding="async"
-                className="max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
-              />
-              <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm backdrop-blur">
-                <ZoomIn className="h-3.5 w-3.5" /> Click to zoom
-              </span>
-            </>
+        <div>
+          {activeImage ? (
+            <ZoomImage src={activeImage} alt={displayName} />
           ) : (
-            <div className="text-9xl">{getCategoryEmoji(product.category)}</div>
+            <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary to-background">
+              <div className="text-9xl">{getCategoryEmoji(product.category)}</div>
+            </div>
           )}
-        </button>
+          {gallery.length > 1 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {gallery.map((url, i) => (
+                <button
+                  key={url + i}
+                  type="button"
+                  onClick={() => setImageIdx(i)}
+                  className={`h-16 w-16 overflow-hidden rounded-md border-2 transition-colors ${
+                    i === imageIdx ? "border-brand-red" : "border-border hover:border-muted-foreground"
+                  }`}
+                  aria-label={`Show image ${i + 1}`}
+                >
+                  <img
+                    src={getImageUrl(url, { w: 160 })}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <div>
           <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             {product.category}
           </div>
-          <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">{product.name}</h1>
+          <h1 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">{displayName}</h1>
           <div className="mt-4 text-2xl font-semibold text-foreground">{formatPrice(effectivePrice)}</div>
           <p className="mt-6 text-base text-muted-foreground">{product.description}</p>
 
@@ -102,6 +122,32 @@ function ProductPage() {
                 </li>
               ))}
             </ul>
+          )}
+
+          {variants.length > 0 && (
+            <div className="mt-6">
+              <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Color · {activeVariant?.name}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {variants.map((v, i) => {
+                  const active = i === variantIdx;
+                  return (
+                    <button
+                      key={v.name + i}
+                      type="button"
+                      onClick={() => setVariantIdx(i)}
+                      title={v.name}
+                      aria-label={v.name}
+                      className={`h-9 w-9 rounded-full border-2 transition-all ${
+                        active ? "border-brand-red ring-2 ring-brand-red/40 ring-offset-2 ring-offset-background" : "border-border hover:border-muted-foreground"
+                      }`}
+                      style={{ backgroundColor: v.hex }}
+                    />
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           {hasSizes && (
@@ -177,29 +223,84 @@ function ProductPage() {
       </div>
 
       <ReviewsSection productId={product.id} />
+    </div>
+  );
+}
 
-      {zoomOpen && product.imageUrl && (
+function ZoomImage({ src, alt }: { src: string; alt: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [hovering, setHovering] = useState(false);
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [touchZoom, setTouchZoom] = useState(false);
+
+  const displaySrc = getImageUrl(src, { w: 960, fit: "inside" });
+  const zoomSrc = getImageUrl(src, { w: 1600, fit: "inside" });
+  const ZOOM = 2.5;
+
+  const onMove = (clientX: number, clientY: number) => {
+    const el = containerRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const x = Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100));
+    const y = Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100));
+    setPos({ x, y });
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative aspect-square overflow-hidden rounded-2xl border border-border bg-gradient-to-br from-secondary to-background"
+      style={{ cursor: hovering ? "zoom-in" : "default" }}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => setHovering(false)}
+      onMouseMove={(e) => onMove(e.clientX, e.clientY)}
+      onTouchStart={(e) => { setTouchZoom(true); const t = e.touches[0]; onMove(t.clientX, t.clientY); }}
+      onTouchMove={(e) => { const t = e.touches[0]; onMove(t.clientX, t.clientY); }}
+      onTouchEnd={() => setTouchZoom(false)}
+    >
+      <img
+        src={displaySrc}
+        srcSet={getImageSrcSet(src, [640, 960, 1200], { fit: "inside" })}
+        sizes="(min-width: 768px) 50vw, 100vw"
+        alt={alt}
+        width={1200}
+        height={1200}
+        loading="eager"
+        fetchPriority="high"
+        decoding="async"
+        className={`absolute inset-0 m-auto max-h-full max-w-full object-contain p-4 sm:p-6 transition-opacity ${touchZoom ? "opacity-0" : "opacity-100"}`}
+      />
+
+      {touchZoom && (
         <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setZoomOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
-        >
-          <button
-            onClick={() => setZoomOpen(false)}
-            className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-background/90 text-foreground shadow hover:bg-background"
-            aria-label="Close"
-          >
-            <X className="h-5 w-5" />
-          </button>
-          <img
-            src={getImageUrl(product.imageUrl, { w: 1600, fit: "inside" })}
-            alt={product.name}
-            onClick={(e) => e.stopPropagation()}
-            className="max-h-[90vh] max-w-[95vw] object-contain"
-          />
-        </div>
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${zoomSrc})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: `${ZOOM * 100}% ${ZOOM * 100}%`,
+            backgroundPosition: `${pos.x}% ${pos.y}%`,
+          }}
+        />
       )}
+
+      {hovering && !touchZoom && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute h-40 w-40 rounded-full border-2 border-white shadow-2xl"
+          style={{
+            left: `calc(${pos.x}% - 80px)`,
+            top: `calc(${pos.y}% - 80px)`,
+            backgroundImage: `url(${zoomSrc})`,
+            backgroundRepeat: "no-repeat",
+            backgroundSize: `${ZOOM * 100}% ${ZOOM * 100}%`,
+            backgroundPosition: `${pos.x}% ${pos.y}%`,
+          }}
+        />
+      )}
+
+      <span className="pointer-events-none absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-background/80 px-2.5 py-1 text-[11px] font-medium text-foreground shadow-sm backdrop-blur">
+        <ZoomIn className="h-3.5 w-3.5" /> Hover to zoom
+      </span>
     </div>
   );
 }
