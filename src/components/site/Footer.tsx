@@ -35,12 +35,8 @@ export function Footer() {
       <div className="mx-auto grid max-w-7xl gap-10 px-6 py-12 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2 text-sm font-semibold tracking-tight">
-            {site.logoUrl ? (
+            {site.logoUrl && (
               <img src={site.logoUrl} alt="MedClub Store" className="h-6 w-6 rounded-md object-cover" />
-            ) : (
-              <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground text-xs font-bold">
-                +
-              </span>
             )}
             MedClub Store
           </div>
