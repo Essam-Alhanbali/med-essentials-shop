@@ -8,15 +8,25 @@ export interface StoreProduct extends Omit<Product, "category"> {
   category: string;
   subcategory?: string;
   imageUrl?: string;
+  images?: string[];
   features?: string[];
   sizes?: ProductSize[];
   years?: string[];
+  variants?: ProductVariant[];
 }
 
 export interface ProductSize {
   label: string;
   stock: number;
   priceDelta?: number;
+}
+
+export interface ProductVariant {
+  name: string;
+  hex: string;
+  price?: number;
+  displayName?: string;
+  images?: string[];
 }
 
 export const YEAR_OPTIONS = [
@@ -212,6 +222,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             features: Array.isArray(data.features) ? data.features : undefined,
             sizes: Array.isArray((data as any).sizes) ? (data as any).sizes : undefined,
             years: Array.isArray((data as any).years) ? (data as any).years : undefined,
+            images: Array.isArray((data as any).images) ? (data as any).images : undefined,
+            variants: Array.isArray((data as any).variants) ? (data as any).variants : undefined,
           };
         });
         setProducts(list);
