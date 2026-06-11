@@ -486,3 +486,127 @@ function YearsEditor({ years, onChange }: { years: string[]; onChange: (next: st
     </div>
   );
 }
+
+function ImagesEditor({
+  images,
+  onChange,
+  label,
+}: {
+  images: string[];
+  onChange: (next: string[]) => void;
+  label: string;
+}) {
+  const update = (i: number, v: string) => onChange(images.map((u, idx) => (idx === i ? v : u)));
+  const remove = (i: number) => onChange(images.filter((_, idx) => idx !== i));
+  const add = (url: string) => onChange([...images, url]);
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mt-2 space-y-2">
+        {images.map((u, i) => (
+          <div key={i} className="flex items-start gap-2">
+            <div className="flex-1">
+              <ImageInput value={u} onChange={(v) => update(i, v)} folder="products" label={`Image ${i + 1}`} />
+            </div>
+            <button
+              type="button"
+              onClick={() => remove(i)}
+              className="mt-6 grid h-9 w-9 place-items-center rounded-md border border-border text-destructive hover:bg-accent"
+              aria-label="Remove image"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => add("")}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-accent"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add image
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function VariantsEditor({
+  variants,
+  onChange,
+}: {
+  variants: ProductVariant[];
+  onChange: (next: ProductVariant[]) => void;
+}) {
+  const update = (i: number, patch: Partial<ProductVariant>) =>
+    onChange(variants.map((v, idx) => (idx === i ? { ...v, ...patch } : v)));
+  const remove = (i: number) => onChange(variants.filter((_, idx) => idx !== i));
+  const add = () => onChange([...variants, { name: "", hex: "#a50908", images: [] }]);
+  return (
+    <div>
+      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        Color variants (first added = default)
+      </div>
+      <div className="mt-2 space-y-3">
+        {variants.map((v, i) => (
+          <div key={i} className="rounded-md border border-border bg-background/40 p-3">
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={v.hex || "#000000"}
+                onChange={(e) => update(i, { hex: e.target.value })}
+                className="h-9 w-12 cursor-pointer rounded border border-border bg-transparent"
+                aria-label="Color swatch"
+              />
+              <input
+                value={v.name}
+                onChange={(e) => update(i, { name: e.target.value })}
+                placeholder="Color name (e.g. Midnight Blue)"
+                className="h-9 flex-1 rounded-md border border-border bg-background px-3 text-sm"
+              />
+              <button
+                type="button"
+                onClick={() => remove(i)}
+                className="grid h-9 w-9 place-items-center rounded-md border border-border text-destructive hover:bg-accent"
+                aria-label="Remove variant"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="mt-2 grid gap-2 sm:grid-cols-2">
+              <input
+                value={v.displayName ?? ""}
+                onChange={(e) => update(i, { displayName: e.target.value })}
+                placeholder="Display name (optional)"
+                className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+              />
+              <input
+                type="number"
+                step="0.001"
+                value={v.price ?? ""}
+                onChange={(e) =>
+                  update(i, { price: e.target.value === "" ? undefined : Number(e.target.value) })
+                }
+                placeholder="Price (JOD) — blank uses base"
+                className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+              />
+            </div>
+            <div className="mt-3">
+              <ImagesEditor
+                images={v.images ?? []}
+                onChange={(images) => update(i, { images })}
+                label="Variant photos"
+              />
+            </div>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={add}
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border px-3 text-xs hover:bg-accent"
+        >
+          <Plus className="h-3.5 w-3.5" /> Add color variant
+        </button>
+      </div>
+    </div>
+  );
+}
