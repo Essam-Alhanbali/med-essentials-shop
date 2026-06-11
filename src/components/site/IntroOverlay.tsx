@@ -42,7 +42,7 @@ export function IntroOverlay() {
         }}
       >
         <div className="flex items-center gap-4">
-          {site.logoUrl ? (
+          {site.logoUrl && (
             <img
               src={getImageUrl(site.logoUrl, { w: 112 })}
               alt=""
@@ -51,28 +51,22 @@ export function IntroOverlay() {
               decoding="async"
               className="h-12 w-12 rounded-lg object-cover md:h-14 md:w-14"
             />
-          ) : (
-            <span className="grid h-12 w-12 place-items-center rounded-lg bg-primary text-primary-foreground md:h-14 md:w-14">
-              <span className="text-2xl font-bold">+</span>
-            </span>
           )}
           <h1 className="text-2xl font-semibold tracking-tight text-foreground md:text-4xl">
             Medical Club Store
           </h1>
         </div>
-        <div className="flex items-center gap-3 text-sm text-muted-foreground md:text-base">
-          <span>powered by</span>
-          {site.poweredByLogoUrl ? (
+        {site.poweredByLogoUrl && (
+          <div className="flex items-center gap-3 text-sm text-muted-foreground md:text-base">
+            <span>powered by</span>
             <img
               src={getImageUrl(site.poweredByLogoUrl, { w: 400, fit: "contain" })}
               alt="Powered by"
               decoding="async"
               className="h-10 w-auto max-w-[200px] object-contain md:h-12"
             />
-          ) : (
-            <span className="text-base font-medium text-foreground md:text-lg">Your Partner</span>
-          )}
-        </div>
+          </div>
+        )}
         <button
           type="button"
           onClick={handleContinue}
