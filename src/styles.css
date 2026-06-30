@@ -61,6 +61,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-brand-red: var(--brand-red);
   --color-brand-red-soft: var(--brand-red-soft);
+  --shadow-sec: 1px 1px 8px rgba(0, 0, 0, 0.2);
 }
 
 :root {

@@ -119,8 +119,7 @@ const DEFAULT_ABOUT: AboutContent = {
   heading: "Built by med students, for med students.",
   intro:
     "MedClub Store is run entirely by the medical students' club at our university. We negotiate directly with manufacturers and distributors so that essential equipment — from your first stethoscope to your white coat — is available at a price every student can afford.",
-  body:
-    "Every dollar of margin goes back into club activities: free tutoring, anatomy lab sessions, mental health programming, and outreach in the local community.",
+  body: "Every dollar of margin goes back into club activities: free tutoring, anatomy lab sessions, mental health programming, and outreach in the local community.",
   email: "store@medclub.edu",
   phone: "+962 7 0000 0000",
   imageUrl: "",
@@ -131,8 +130,10 @@ const DEFAULT_ABOUT: AboutContent = {
   ],
 };
 
+const USE_REMOTE_HOME_CONTENT = false;
+
 const DEFAULT_HOME: HomeContent = {
-  heroHeadline: "Everything you need for medical school.",
+  heroHeadline: `welcome to <span class="text-[#007be0]">MedClub</span>`,
   heroSubheadline:
     "Stethoscopes, anatomy atlases, white coats and more — at student-friendly prices, shipped from campus.",
   heroImageUrl: "",
@@ -142,8 +143,16 @@ const DEFAULT_HOME: HomeContent = {
     { label: "Avg. saving", value: "22%" },
   ],
   features: [
-    { icon: "🚚", title: "Free campus pickup", description: "Order online, pick up at the Student Union." },
-    { icon: "🛡️", title: "Authentic & warrantied", description: "Sourced directly from manufacturers." },
+    {
+      icon: "🚚",
+      title: "Free campus pickup",
+      description: "Order online, pick up at the Student Union.",
+    },
+    {
+      icon: "🛡️",
+      title: "Authentic & warrantied",
+      description: "Sourced directly from manufacturers.",
+    },
     { icon: "🎓", title: "Student pricing", description: "No markup — club covers the overhead." },
   ],
   featuredProductIds: [],
@@ -168,9 +177,18 @@ const DEFAULT_CONTACT: ContactContent = {
   address: "Student Union, Room 204",
   hours: "Mon–Fri · 10:00–16:00",
   faqs: [
-    { q: "Who can buy from the store?", a: "Anyone is welcome, but club members get extra discounts on apparel and books." },
-    { q: "How does pickup work?", a: "Orders are ready the next weekday at the Student Union, Room 204. You'll get an email when yours is ready." },
-    { q: "What's your return policy?", a: "Unused items can be returned within 30 days for a full refund or store credit." },
+    {
+      q: "Who can buy from the store?",
+      a: "Anyone is welcome, but club members get extra discounts on apparel and books.",
+    },
+    {
+      q: "How does pickup work?",
+      a: "Orders are ready the next weekday at the Student Union, Room 204. You'll get an email when yours is ready.",
+    },
+    {
+      q: "What's your return policy?",
+      a: "Unused items can be returned within 30 days for a full refund or store credit.",
+    },
   ],
 };
 
@@ -229,7 +247,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setProducts(list);
         setLoading(false);
       },
-      () => setLoading(false)
+      () => setLoading(false),
     );
     const unsubC = onSnapshot(
       collection(db, "categories"),
@@ -245,45 +263,50 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               imageUrl: data.imageUrl,
               emoji: data.emoji,
             };
-          })
+          }),
         );
       },
-      () => {}
+      () => {},
     );
     const unsubAbout = onSnapshot(
       doc(db, "content", "about"),
       (s) => {
         if (s.exists()) setAbout({ ...DEFAULT_ABOUT, ...(s.data() as Partial<AboutContent>) });
       },
-      () => {}
+      () => {},
     );
     const unsubHome = onSnapshot(
       doc(db, "content", "home"),
       (s) => {
-        if (s.exists()) setHome({ ...DEFAULT_HOME, ...(s.data() as Partial<HomeContent>) });
+        if (USE_REMOTE_HOME_CONTENT && s.exists()) {
+          setHome({ ...DEFAULT_HOME, ...(s.data() as Partial<HomeContent>) });
+        } else {
+          setHome(DEFAULT_HOME);
+        }
       },
-      () => {}
+      () => {},
     );
     const unsubFooter = onSnapshot(
       doc(db, "content", "footer"),
       (s) => {
         if (s.exists()) setFooter({ ...DEFAULT_FOOTER, ...(s.data() as Partial<FooterContent>) });
       },
-      () => {}
+      () => {},
     );
     const unsubContact = onSnapshot(
       doc(db, "content", "contact"),
       (s) => {
-        if (s.exists()) setContact({ ...DEFAULT_CONTACT, ...(s.data() as Partial<ContactContent>) });
+        if (s.exists())
+          setContact({ ...DEFAULT_CONTACT, ...(s.data() as Partial<ContactContent>) });
       },
-      () => {}
+      () => {},
     );
     const unsubSite = onSnapshot(
       doc(db, "content", "site"),
       (s) => {
         if (s.exists()) setSite({ ...DEFAULT_SITE, ...(s.data() as Partial<SiteImages>) });
       },
-      () => {}
+      () => {},
     );
     const unsubPartners = onSnapshot(
       collection(db, "partners"),
@@ -298,10 +321,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
               websiteUrl: data.websiteUrl,
               description: data.description,
             };
-          })
+          }),
         );
       },
-      () => {}
+      () => {},
     );
     return () => {
       unsubP();
@@ -339,7 +362,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       partners,
       loading,
     };
-  }, [products, categoryDocs, hasCategoryDocs, about, home, footer, contact, site, partners, loading]);
+  }, [
+    products,
+    categoryDocs,
+    hasCategoryDocs,
+    about,
+    home,
+    footer,
+    contact,
+    site,
+    partners,
+    loading,
+  ]);
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
